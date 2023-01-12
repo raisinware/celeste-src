@@ -1,2 +1,0 @@
-# celeste-src
-Celeste Userland
