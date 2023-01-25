@@ -9,6 +9,13 @@ Status
 Critical parts of the userland (libc, build system, etc) are currently under
 development, so nothing is currently functional at the moment.
 
+Licensing
+=========
+New code contributed to this repo is licensed under the `ISC <LICENSE.ISC>`_
+or `Apache 2.0 <LICENSE.Apache>`_ licenses. Existing code and modifications to
+existing code will remain under their original licenses unless otherwise
+specified.
+
 Special Thanks
 ==============
 This list is in no particular order.
