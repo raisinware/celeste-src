@@ -14,7 +14,7 @@ Licensing
 New code contributed to this repo is licensed under the `ISC <LICENSE.ISC>`_,
 or `Apache 2.0 <LICENSE.Apache>`_ licenses, at your option. 3rd-party code and
 modifications to 3rd-party code will remain under their original licenses unless
-otherwise specified. See `COPYRIGHT <COPYRIGHT>`_ for details.
+otherwise specified. See `COPYRIGHT <COPYRIGHT.rst>`_ for details.
 
 Special Thanks
 ==============
