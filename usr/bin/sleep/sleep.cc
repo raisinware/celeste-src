@@ -22,15 +22,15 @@
 int main(int argc, const char *argv[]) {
 	try {
 		// make sure an argument was passed
-		if (argv[1] != NULL) {
+		if (argv[1] != nullptr) {
 			std::string arg = argv[1];
-			std::size_t pos;
+			std::size_t pos = 0;
 
-			int seconds = std::stoi(arg, &pos);
+			const int seconds = std::stoi(arg, &pos);
 
 			// throw an exception if more then 1 argument was given,
 			// or if theres any stray characters in the argument
-			if( argc != 2 || pos < arg.size()) {
+			if ( argc != 2 || pos < arg.size() ) {
 				throw 1;
 			}
 
@@ -44,7 +44,7 @@ int main(int argc, const char *argv[]) {
 	}
 
 	catch (...) {
-		std::cout << "usage: sleep [seconds]\n";
+		std::cout << "usage: sleep [seconds]" << std::endl;
 		return 1;
 	}
 
