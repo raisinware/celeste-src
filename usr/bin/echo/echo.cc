@@ -18,10 +18,11 @@
 #include <iostream>
 
 int main(int argc, const char *argv[]) {
-    // iterate through all arguments and print, seperating each with a space.
+    // iterate through most arguments and print, seperating each with a space.
 	for ( int i=1; i < (argc - 1); i++ )
 		std::cout << argv[i] << " ";
     
+    // print the last argument
     if (argc > 1)
         std::cout << argv[argc - 1];
 
