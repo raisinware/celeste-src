@@ -17,5 +17,4 @@ treebuild.xml
 zconf.h
 zconf.h.in
 zlib.3.pdf
-zlib2ansi
 zlib.pc.in
