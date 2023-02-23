@@ -1,35 +1,59 @@
 /* SPDX-License-Identifier: Apache-2.0 OR ISC */
-
-/* nproc.c - get the available cpus
- *
- * Copyright (c) 2023 by raisinware
- * 
- * Licensed under either the Apache-2.0 or ISC Licenses, at your option.
- * You may obtain a copy of each license at:
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *     https://github.com/raisinware/celeste-src/blob/main/LICENSE.ISC
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- */
+/* nproc.c - get the available cpus */
 
 #define _GNU_SOURCE
-#include <stdio.h>
 #include <sched.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
-int getcpus() {
+/** Returns available cores/CPUs. */
+int getCPUs() {
+# if defined(__linux__)
 	/* use 'sched_getaffinity' syscall wrapper on linux */
 	cpu_set_t set;
+
 	if (sched_getaffinity(0, sizeof(cpu_set_t), &set) == 0)
 	{
 		int cpus = CPU_COUNT(&set);
 		return cpus;
 	}
+
+# elif defined(_SC_NPROCESSORS_ONLN)
+	/* fallback to sysconf on supported systems for getting online cpus */
+	int cpus = sysconf(_SC_NPROCESSORS_ONLN)
+
+	if (cpus > 0) {
+		return cpus;
+	}
+# endif
+
 	return 1;
 }
 
-int main() {
-	printf("%d\n", getcpus());
+
+/** Returns all cores/CPUs. */
+int getAllCPUs() {
+	int cpus = getCPUs();
+
+	/* TODO: make this work properly on musl */
+# ifdef _SC_NPROCESSORS_CONF
+	/* use sysconf to determine all avalible cpus on supported systems */
+	int all_cpus = sysconf(_SC_NPROCESSORS_CONF);
+	if (all_cpus >= cpus) {
+		return all_cpus;
+	}
+# endif
+
+	return cpus;
+}
+
+int main(int argc, const char *argv[]) {
+	/* check for --all argument and call getAllCPUs() */
+	if (argc == 2 && (strcmp(argv[1], "--all") == 0)) {
+		printf("%d\n", getAllCPUs());
+		return 0;
+	}
+
+	printf("%d\n", getCPUs());
 }
