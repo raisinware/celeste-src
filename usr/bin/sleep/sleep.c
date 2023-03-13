@@ -1,12 +1,12 @@
 /* SPDX-License-Identifier: Apache-2.0 OR ISC */
 /* sleep.c - sleep for x amount of seconds */
 
-#define _GNU_SOURCE
+#include <celeste_def.h>
+
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdnoreturn.h>
 #include <string.h>
 #include <unistd.h>
 
