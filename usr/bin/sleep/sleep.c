@@ -3,6 +3,7 @@
 
 #define _GNU_SOURCE
 #include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdnoreturn.h>
@@ -22,10 +23,10 @@ unsigned int getuint(const char* str){
 	errno = 0;
 
 	char* leftover = NULL;
-	unsigned int secs = strtoul(str, &leftover, 10);
+	unsigned long secs = strtoul(str, &leftover, 10);
 
 	/* check that a valid number was fed with no trailing characters */
-	if ( (errno == 0 && str && !*leftover) && (str != leftover) )
+	if ( (errno == 0 && str && !*leftover) && (str != leftover) && (secs <= UINT_MAX) )
 		return secs;
 	else usage();
 }
