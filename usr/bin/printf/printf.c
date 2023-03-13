@@ -31,27 +31,22 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/*
- * Important: This file is used both as a standalone program /usr/bin/printf
- * and as a builtin for /bin/sh (#define SHELL).
- */
 
-#ifndef SHELL
 #ifndef lint
+__attribute__((used))
 static char const copyright[] =
 "@(#) Copyright (c) 1989, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-#endif
 
-#ifndef lint
-#if 0
+__attribute__((used))
 static char const sccsid[] = "@(#)printf.c	8.1 (Berkeley) 7/20/93";
-#endif
+
+__attribute__((used))
 static const char rcsid[] =
   "$FreeBSD$";
 #endif /* not lint */
 
+#define	_XOPEN_SOURCE
 #include <sys/types.h>
 
 #include <ctype.h>
@@ -65,12 +60,6 @@ static const char rcsid[] =
 #include <string.h>
 #include <unistd.h>
 #include <wchar.h>
-
-#ifdef SHELL
-#define	main printfcmd
-#include "bltin/bltin.h"
-#include "options.h"
-#endif
 
 #define	PF(f, func) do {						\
 	if (havewidth)							\
@@ -111,17 +100,10 @@ main(int argc, char *argv[])
 	size_t len;
 	int end, rval;
 	char *format, *fmt, *start;
-#ifndef SHELL
 	int ch;
 
 	(void) setlocale(LC_ALL, "");
-#endif
 
-#ifdef SHELL
-	nextopt("");
-	argc -= argptr - argv;
-	argv = argptr;
-#else
 	while ((ch = getopt(argc, argv, "")) != -1)
 		switch (ch) {
 		case '?':
@@ -131,16 +113,12 @@ main(int argc, char *argv[])
 		}
 	argc -= optind;
 	argv += optind;
-#endif
 
 	if (argc < 1) {
 		usage();
 		return (1);
 	}
 
-#ifdef SHELL
-	INTOFF;
-#endif
 	/*
 	 * Basic algorithm is to scan the format string for conversion
 	 * specifications -- once one is found, find out if the field
@@ -171,9 +149,6 @@ main(int argc, char *argv[])
 				} else {
 					fmt = printf_doformat(fmt, &rval);
 					if (fmt == NULL || fmt == end_fmt) {
-#ifdef SHELL
-						INTON;
-#endif
 						return (fmt == NULL ? 1 : rval);
 					}
 					end = 0;
@@ -188,16 +163,10 @@ main(int argc, char *argv[])
 
 		if (end == 1) {
 			warnx("missing format character");
-#ifdef SHELL
-			INTON;
-#endif
 			return (1);
 		}
 		fwrite(start, 1, fmt - start, stdout);
 		if (!*gargv) {
-#ifdef SHELL
-			INTON;
-#endif
 			return (rval);
 		}
 		/* Restart at the beginning of the format string. */
