@@ -4,17 +4,17 @@
 #include <stdio.h>
 
 int main(int argc, char *argv[]) {
-    // iterate through most arguments and print to stdout.
+	// iterate through most arguments and print to stdout.
 	for ( int i=1; i < argc; i++ ) {
-        fputs(argv[i], stdout);
+		fputs(argv[i], stdout);
 
-        // print space if not the last argument
-        if (i < (argc-1))
-            fputc(' ', stdout);
-    }
+		// print space if not the last argument
+		if (i < (argc-1))
+			fputc(' ', stdout);
+	}
 
-    // print newline
+	// print newline
 	puts("");
 
-    return 0;
+	return 0;
 }
