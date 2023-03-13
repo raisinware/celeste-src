@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-int main(int argc, const char *argv[]) {
+int main(int argc, char *argv[]) {
     // iterate through most arguments and print to stdout.
 	for ( int i=1; i < argc; i++ ) {
         fputs(argv[i], stdout);
