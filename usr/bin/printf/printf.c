@@ -32,6 +32,9 @@
  * SUCH DAMAGE.
  */
 
+#define	_POSIX_C_SOURCE 200809L
+#include "../../include/CelesteC.h"
+
 #ifndef lint
 __attribute__((used))
 static char const copyright[] =
@@ -43,10 +46,9 @@ static char const sccsid[] = "@(#)printf.c	8.1 (Berkeley) 7/20/93";
 
 __attribute__((used))
 static const char rcsid[] =
-  "$FreeBSD$";
+  "$FreeBSD$ commit: 5dbd4b8e96521244525a0fee29694719c873bd75";
 #endif /* not lint */
 
-#define	_XOPEN_SOURCE
 #include <sys/types.h>
 
 #include <ctype.h>
