@@ -6,6 +6,8 @@
  * Public domain.
  */
 
+#define _GNU_SOURCE
+#include "../../include/CelesteC.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -24,7 +26,7 @@ int		 to_integer(struct val *, const char **);
 void		 to_string(struct val *);
 int		 is_zero_or_null(struct val *);
 void		 nexttoken(int);
-__dead void	 error(void);
+noreturn void	 error(void);
 struct val	*eval6(void);
 struct val	*eval5(void);
 struct val	*eval4(void);
@@ -205,7 +207,7 @@ nexttoken(int pat)
 	return;
 }
 
-__dead void
+noreturn void
 error(void)
 {
 	errx(2, "syntax error");
@@ -495,8 +497,9 @@ main(int argc, char *argv[])
 {
 	struct val     *vp;
 
-	if (pledge("stdio", NULL) == -1)
-		err(2, "pledge");
+	// TODO: make a pledge library for linux
+	// if (pledge("stdio", NULL) == -1)
+	// 	err(2, "pledge");
 
 	if (argc > 1 && !strcmp(argv[1], "--"))
 		argv++;
