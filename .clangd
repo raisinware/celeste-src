@@ -1,0 +1,14 @@
+If:
+  PathMatch: [.*\.c, .*\.h]
+CompileFlags:
+  Add: [
+    -xc,
+    -std=c11,
+    -Wall,
+    -Wextra,
+    -Wpedantic,
+    -Wc2x-compat,
+    -Wc2x-extensions,
+    -Werror=implicit-function-declaration,
+    -Werror=implicit-fallthrough
+    ]
