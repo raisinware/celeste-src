@@ -7,8 +7,7 @@
 
 #ifndef ZCONF_H
 #define ZCONF_H
-#cmakedefine Z_PREFIX
-#cmakedefine Z_HAVE_UNISTD_H
+#define Z_HAVE_UNISTD_H 1
 
 /*
  * If you *really* need a unique prefix for all types and library functions,
