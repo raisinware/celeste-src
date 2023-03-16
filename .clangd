@@ -10,5 +10,6 @@ CompileFlags:
     -Wc2x-compat,
     -Wc2x-extensions,
     -Werror=implicit-function-declaration,
-    -Werror=implicit-fallthrough
+    -Werror=implicit-fallthrough,
+    -Werror=deprecated-non-prototype
     ]
