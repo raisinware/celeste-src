@@ -11,5 +11,6 @@ CompileFlags:
     -Wc2x-extensions,
     -Werror=implicit-function-declaration,
     -Werror=implicit-fallthrough,
+    -Werror=strict-prototypes,
     -Werror=deprecated-non-prototype
     ]
