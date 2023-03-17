@@ -5,6 +5,9 @@
 
 /* to use, do: ./configure --cover && make cover */
 
+// for __maybe_unused
+#include "../../../usr/include/CelesteC.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -460,7 +463,7 @@ local unsigned pull(void *desc, unsigned char **buf)
     return next < sizeof(dat) ? (*buf = dat + next++, 1) : 0;
 }
 
-local int push(void *desc, unsigned char *buf, unsigned len)
+local int push(void *desc, __maybe_unused unsigned char *buf, unsigned len)
 {
     buf += len;
     return desc != Z_NULL;      /* force error if desc not null */

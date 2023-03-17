@@ -80,6 +80,9 @@
  * The history for versions after 1.2.0 are in ChangeLog in zlib distribution.
  */
 
+// for __EXPLICIT_FALLTHROUGH__ macro
+#include "../../usr/include/CelesteC.h"
+
 #include "zutil.h"
 #include "inftrees.h"
 #include "inflate.h"
@@ -706,6 +709,7 @@ int ZEXPORT inflate(z_streamp strm, int flush)
             INITBITS();
             state->mode = TIME;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case TIME:
             NEEDBITS(32);
             if (state->head != Z_NULL)
@@ -715,6 +719,7 @@ int ZEXPORT inflate(z_streamp strm, int flush)
             INITBITS();
             state->mode = OS;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case OS:
             NEEDBITS(16);
             if (state->head != Z_NULL) {
@@ -726,6 +731,7 @@ int ZEXPORT inflate(z_streamp strm, int flush)
             INITBITS();
             state->mode = EXLEN;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case EXLEN:
             if (state->flags & 0x0400) {
                 NEEDBITS(16);
@@ -740,6 +746,7 @@ int ZEXPORT inflate(z_streamp strm, int flush)
                 state->head->extra = Z_NULL;
             state->mode = EXTRA;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case EXTRA:
             if (state->flags & 0x0400) {
                 copy = state->length;
@@ -764,6 +771,7 @@ int ZEXPORT inflate(z_streamp strm, int flush)
             state->length = 0;
             state->mode = NAME;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case NAME:
             if (state->flags & 0x0800) {
                 if (have == 0) goto inf_leave;
@@ -786,6 +794,7 @@ int ZEXPORT inflate(z_streamp strm, int flush)
             state->length = 0;
             state->mode = COMMENT;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case COMMENT:
             if (state->flags & 0x1000) {
                 if (have == 0) goto inf_leave;
@@ -807,6 +816,7 @@ int ZEXPORT inflate(z_streamp strm, int flush)
                 state->head->comment = Z_NULL;
             state->mode = HCRC;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case HCRC:
             if (state->flags & 0x0200) {
                 NEEDBITS(16);
@@ -831,6 +841,7 @@ int ZEXPORT inflate(z_streamp strm, int flush)
             INITBITS();
             state->mode = DICT;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case DICT:
             if (state->havedict == 0) {
                 RESTORE();
@@ -839,9 +850,11 @@ int ZEXPORT inflate(z_streamp strm, int flush)
             strm->adler = state->check = adler32(0L, Z_NULL, 0);
             state->mode = TYPE;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case TYPE:
             if (flush == Z_BLOCK || flush == Z_TREES) goto inf_leave;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case TYPEDO:
             if (state->last) {
                 BYTEBITS();
@@ -893,9 +906,11 @@ int ZEXPORT inflate(z_streamp strm, int flush)
             state->mode = COPY_;
             if (flush == Z_TREES) goto inf_leave;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case COPY_:
             state->mode = COPY;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case COPY:
             copy = state->length;
             if (copy) {
@@ -932,6 +947,7 @@ int ZEXPORT inflate(z_streamp strm, int flush)
             state->have = 0;
             state->mode = LENLENS;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case LENLENS:
             while (state->have < state->ncode) {
                 NEEDBITS(3);
@@ -954,6 +970,7 @@ int ZEXPORT inflate(z_streamp strm, int flush)
             state->have = 0;
             state->mode = CODELENS;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case CODELENS:
             while (state->have < state->nlen + state->ndist) {
                 for (;;) {
@@ -1038,9 +1055,11 @@ int ZEXPORT inflate(z_streamp strm, int flush)
             state->mode = LEN_;
             if (flush == Z_TREES) goto inf_leave;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case LEN_:
             state->mode = LEN;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case LEN:
             if (have >= 6 && left >= 258) {
                 RESTORE();
@@ -1091,6 +1110,7 @@ int ZEXPORT inflate(z_streamp strm, int flush)
             state->extra = (unsigned)(here.op) & 15;
             state->mode = LENEXT;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case LENEXT:
             if (state->extra) {
                 NEEDBITS(state->extra);
@@ -1102,6 +1122,7 @@ int ZEXPORT inflate(z_streamp strm, int flush)
             state->was = state->length;
             state->mode = DIST;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case DIST:
             for (;;) {
                 here = state->distcode[BITS(state->distbits)];
@@ -1130,6 +1151,7 @@ int ZEXPORT inflate(z_streamp strm, int flush)
             state->extra = (unsigned)(here.op) & 15;
             state->mode = DISTEXT;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case DISTEXT:
             if (state->extra) {
                 NEEDBITS(state->extra);
@@ -1147,6 +1169,7 @@ int ZEXPORT inflate(z_streamp strm, int flush)
             Tracevv((stderr, "inflate:         distance %u\n", state->offset));
             state->mode = MATCH;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case MATCH:
             if (left == 0) goto inf_leave;
             copy = out - left;
@@ -1223,6 +1246,7 @@ int ZEXPORT inflate(z_streamp strm, int flush)
 #ifdef GUNZIP
             state->mode = LENGTH;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case LENGTH:
             if (state->wrap && state->flags) {
                 NEEDBITS(32);
@@ -1237,6 +1261,7 @@ int ZEXPORT inflate(z_streamp strm, int flush)
 #endif
             state->mode = DONE;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
         case DONE:
             ret = Z_STREAM_END;
             goto inf_leave;

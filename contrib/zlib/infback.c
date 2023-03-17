@@ -10,6 +10,9 @@
    inflate_fast() can be used with either inflate.c or infback.c.
  */
 
+// for __EXPLICIT_FALLTHROUGH__ macro
+#include "../../usr/include/CelesteC.h"
+
 #include "zutil.h"
 #include "inftrees.h"
 #include "inflate.h"
@@ -471,6 +474,7 @@ int ZEXPORT inflateBack(z_streamp strm, in_func in, void FAR *in_desc,
             Tracev((stderr, "inflate:       codes ok\n"));
             state->mode = LEN;
                 /* fallthrough */
+                __EXPLICIT_FALLTHROUGH__;
 
         case LEN:
             /* use inflate_fast() if we have enough input and output */
