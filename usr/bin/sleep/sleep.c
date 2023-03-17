@@ -11,7 +11,7 @@
 #include <unistd.h>
 
 /** Display usage message and exit with an error */
-static noreturn void usage(void){
+noreturn static void usage(void){
 	fprintf(stderr, "usage: %s [seconds]\n",
 		program_invocation_short_name);
 	exit(EXIT_FAILURE);
