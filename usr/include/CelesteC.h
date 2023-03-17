@@ -54,13 +54,13 @@
 	#define __deprecated(msg) __declspec(deprecated(msg))
 #endif
 
-// __fallthrough attribute
+// __EXPLICIT_FALLTHROUGH__ attribute
 #if __has_c_attribute(fallthrough)
-	#define __fallthrough [[fallthrough]]
+	#define __EXPLICIT_FALLTHROUGH__ [[fallthrough]]
 #elif __has_attribute(unused)
-	#define __fallthrough __attribute__((fallthrough))
+	#define __EXPLICIT_FALLTHROUGH__ __attribute__((fallthrough))
 #else
-	#define __fallthrough
+	#define __EXPLICIT_FALLTHROUGH__
 #endif
 
 // __maybe_unused attribute
