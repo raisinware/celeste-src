@@ -21,8 +21,7 @@ Special Thanks
 ==============
 This list is in no particular order.
 
-- `musl libc <https://www.musl-libc.org/>`_ (will be used as the base for the
-  Celeste Linux libc)
+- `musl libc <https://www.musl-libc.org/>`_ (will be used as the libc)
 - `ckati <https://github.com/google/kati>`_ (clean re-implementation of GNU
   Make that can export ninja files, will be used as the make implementation for
   building the kernel)
