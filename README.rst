@@ -12,8 +12,8 @@ development, so nothing is currently functional at the moment.
 
 Licensing
 =========
-New code contributed to this repo is licensed under the `ISC <LICENSE.ISC>`_,
-and `Apache 2.0 <LICENSE.Apache>`_ licenses. 3rd-party code and modifications
+New code contributed to this repo is licensed under the `ISC <LICENSE-ISC>`_,
+and `Apache 2.0 <LICENSE-Apache>`_ licenses. 3rd-party code and modifications
 to 3rd-party code will remain under their original licenses unless otherwise
 specified. See `COPYRIGHT <COPYRIGHT.rst>`_ for details.
 
