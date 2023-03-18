@@ -5,13 +5,14 @@ CompileFlags:
     -xc,
     -std=c11,
     -Wall,
-    -Wextra,
-    -Wpedantic,
     -Wc2x-compat,
     -Wc2x-extensions,
-    -Werror=implicit-function-declaration,
     -Werror=implicit-fallthrough,
+    -Werror=implicit-function-declaration,
     -Werror=implicit-int,
+    -Werror=return-type,
     -Werror=strict-prototypes,
     -Werror=deprecated-non-prototype
+    -Wextra,
+    -Wpedantic,
     ]
