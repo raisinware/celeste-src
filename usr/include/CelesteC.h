@@ -104,8 +104,6 @@
 #endif
 
 // __used attribute (gnu extension)
-#if __has_c_attribute(gnu::used)
-	#define __used [[gnu::used]]
-#elif __has_attribute(used)
+#if __has_attribute(used)
 	#define __used __attribute__((used))
 #endif
