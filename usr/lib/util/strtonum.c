@@ -23,7 +23,7 @@ long long strtonum(const char* str, long long minval, long long maxval,
 
 		if ( (num < minval) || (num > maxval) )
 			errno = ERANGE;
-		if (*leftover != '\0')
+		if ( (str == leftover) || (*leftover != '\0') )
 			errno = EINVAL;
 	}
 
