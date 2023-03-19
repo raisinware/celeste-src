@@ -34,17 +34,18 @@
 
 #define	_POSIX_C_SOURCE 200809L
 #include "../../include/CelesteC.h"
+#include "../../lib/util/CelesteUtil.h"
 
 #ifndef lint
-__attribute__((used))
+__used
 static char const copyright[] =
 "@(#) Copyright (c) 1989, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
 
-__attribute__((used))
+__used
 static char const sccsid[] = "@(#)printf.c	8.1 (Berkeley) 7/20/93";
 
-__attribute__((used))
+__used
 static const char rcsid[] =
   "$FreeBSD$ commit: 5dbd4b8e96521244525a0fee29694719c873bd75";
 #endif /* not lint */
@@ -655,5 +656,6 @@ asciicode(void)
 static void
 usage(void)
 {
-	(void)fprintf(stderr, "usage: printf format [arguments ...]\n");
+	(void)fprintf(stderr, "usage: %s format [arguments ...]\n",
+		getprogname());
 }
