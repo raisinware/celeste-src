@@ -2,4 +2,4 @@
 
 add_executable("printf" printf.c)
 
-target_link_libraries("printf" util)
+target_link_libraries("printf" libutil)

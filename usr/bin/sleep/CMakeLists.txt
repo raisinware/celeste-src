@@ -2,4 +2,4 @@
 
 add_executable("sleep" sleep.c)
 
-target_link_libraries("sleep" util)
+target_link_libraries("sleep" libutil)
