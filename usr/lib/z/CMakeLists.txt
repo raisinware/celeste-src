@@ -35,12 +35,12 @@ set(ZLIB_SOURCES
     ../../../contrib/zlib/zutil.c
 )
 
-add_library(zlib SHARED
+add_library("zlib" SHARED
         "${ZLIB_SOURCES}" "${ZLIB_PUBLIC_HDRS}" "${ZLIB_PRIVATE_HDRS}")
-add_library(zlibstatic STATIC
+add_library("zlibstatic" STATIC
         "${ZLIB_SOURCES}" "${ZLIB_PUBLIC_HDRS}" "${ZLIB_PRIVATE_HDRS}")
 
-set_target_properties(zlib PROPERTIES SOVERSION 1)
-set_target_properties(zlib PROPERTIES VERSION "${ZLIB_FULL_VERSION}")
+set_target_properties("zlib" PROPERTIES SOVERSION "1")
+set_target_properties("zlib" PROPERTIES VERSION "${ZLIB_FULL_VERSION}")
 
-set_target_properties(zlib zlibstatic PROPERTIES OUTPUT_NAME z)
+set_target_properties("zlib" "zlibstatic" PROPERTIES OUTPUT_NAME "z")
