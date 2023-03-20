@@ -8,6 +8,8 @@
 
 #define _GNU_SOURCE
 #include "../../include/CelesteC.h"
+#include "../../lib/util/CelesteUtil.h"
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -151,7 +153,7 @@ to_string(struct val *vp)
 	if (vp->type == string)
 		return;
 
-	if (asprintf(&tmp, "%lld", vp->u.i) == -1)
+	if (asprintf(&tmp, "%"PRId64, vp->u.i) == -1)
 		err(3, NULL);
 
 	vp->type = string;
@@ -513,7 +515,7 @@ main(int argc, char *argv[])
 		error();
 
 	if (vp->type == integer)
-		printf("%lld\n", vp->u.i);
+		printf("%"PRId64"\n", vp->u.i);
 	else
 		printf("%s\n", vp->u.s);
 
