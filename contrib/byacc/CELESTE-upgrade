@@ -1,0 +1,3 @@
+byacc was fetched with the following commands
+	curl -OJL https://www.invisible-island.net/archives/byacc/byacc-20230219.tgz
+	bsdtar -X CELESTE-Xlist -xf byacc-20230219.tgz --strip-components 1

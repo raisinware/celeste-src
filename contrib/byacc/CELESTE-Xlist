@@ -1,0 +1,8 @@
+package/
+config.guess
+config.sub
+configure
+descrip.mms
+install-sh
+Makefile.in
+vmsbuild.com
