@@ -4,5 +4,5 @@ config.sub
 configure
 descrip.mms
 install-sh
-Makefile.in
+Makefile.old
 vmsbuild.com
