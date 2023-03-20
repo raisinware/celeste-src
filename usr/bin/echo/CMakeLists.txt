@@ -1,3 +1,3 @@
 # SPDX-License-Identifier: Apache-2.0 OR ISC
 
-add_executable(echo echo.c)
+add_executable("echo" echo.c)

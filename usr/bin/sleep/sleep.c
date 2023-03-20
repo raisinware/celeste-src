@@ -10,8 +10,7 @@
 
 /// Display usage message and exit with an error
 noreturn static void usage(void) {
-	fprintf(stderr, "usage: %s [seconds]\n",
-		getprogname());
+	fprintf(stderr, "usage: %s [seconds]\n", getprogname());
 	exit(EXIT_FAILURE);
 }
 
@@ -19,15 +18,17 @@ int main(int argc, char* argv[]) {
 	const char* errstr;
 
 	// check that only 1 argument was passed
-	if ( argc != 2 ) 
+	if (argc != 2) 
 		usage();
 	
 	unsigned int num = strtonum(argv[1], 0, UINT_MAX, &errstr);
 
-	if (errstr != NULL)
+	if (errstr != NULL) {
+		fprintf(stderr, "Error: %s\n", errstr);
 		usage();
-	else
-	 	sleep(num);
+	} else {
+		sleep(num);
+	}
 
 	return EXIT_SUCCESS;
 }
