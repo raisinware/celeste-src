@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0 OR ISC
 
+add_subdirectory("awk")
 add_subdirectory("echo")
 add_subdirectory("expr")
 add_subdirectory("false")
