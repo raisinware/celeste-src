@@ -5,9 +5,6 @@
 
 /* to use, do: ./configure --cover && make cover */
 
-// for __maybe_unused
-#include "../../../usr/include/CelesteC.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,8 +14,8 @@
 /* get definition of internal structure so we can mess with it (see pull()),
    and so we can call inflate_trees() (see cover5()) */
 #define ZLIB_INTERNAL
-#include "../inftrees.h"
-#include "../inflate.h"
+#include "inftrees.h"
+#include "inflate.h"
 
 #define local static
 
@@ -463,7 +460,7 @@ local unsigned pull(void *desc, unsigned char **buf)
     return next < sizeof(dat) ? (*buf = dat + next++, 1) : 0;
 }
 
-local int push(void *desc, __maybe_unused unsigned char *buf, unsigned len)
+local int push(void *desc, unsigned char *buf, unsigned len)
 {
     buf += len;
     return desc != Z_NULL;      /* force error if desc not null */
