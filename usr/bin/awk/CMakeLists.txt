@@ -15,22 +15,6 @@ add_custom_command(
           ${AWK_SRCDIR}/proto.h
 )
 
-# host tool to generate proctab.c
-# TODO: make sure this only builds on host
-set(_MAKETAB_SOURCES
-    awkgram.tab.h
-    ${AWK_SRCDIR}/maketab.c
-)
-add_executable("_maketab" EXCLUDE_FROM_ALL ${_MAKETAB_SOURCES})
-target_include_directories("_maketab" PRIVATE ${CMAKE_BINARY_DIR}/usr/bin/awk)
-add_custom_command(
-  OUTPUT proctab.c
-
-  COMMAND ${CMAKE_SOURCE_DIR}/usr/bin/awk/maketab.sh ${CMAKE_BINARY_DIR}
-
-  DEPENDS _maketab awkgram.tab.h maketab.sh
-)
-
 # awk itself
 set(AWK_SOURCES
     awkgram.tab.c
