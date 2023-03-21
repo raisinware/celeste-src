@@ -36,6 +36,7 @@ flex-2.6.4/po/sv.gmo
 flex-2.6.4/po/vi.gmo
 flex-2.6.4/po/da.gmo
 flex-2.6.4/src/Makefile.in
+flex-2.6.4/src/gettext.h
 flex-2.6.4/tests/Makefile.in
 flex-2.6.4/tools/
 flex-2.6.4/ABOUT-NLS
