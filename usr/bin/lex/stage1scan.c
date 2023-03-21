@@ -1,6 +1,6 @@
-#line 1 "$@"
+#line 1 "scan.c"
 
-#line 3 "$@"
+#line 3 "scan.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -1963,9 +1963,9 @@ extern const char *escaped_qstart, *escaped_qend;
     if (!indented_code) line_directive_out(NULL, 0);\
 } while (0)
 
-#line 1966 "$@"
+#line 1966 "scan.c"
 
-#line 1968 "$@"
+#line 1968 "scan.c"
 
 #define INITIAL 0
 #define SECT2 1
@@ -2231,7 +2231,7 @@ YY_DECL
 	char nmdef[MAXLINE];
 
 
-#line 2234 "$@"
+#line 2234 "scan.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -4132,7 +4132,7 @@ YY_RULE_SETUP
 #line 1013 "scan.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 4135 "$@"
+#line 4135 "scan.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(SECT2):
 case YY_STATE_EOF(CODEBLOCK):
