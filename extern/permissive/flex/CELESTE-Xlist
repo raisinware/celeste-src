@@ -37,8 +37,7 @@ flex-2.6.4/po/vi.gmo
 flex-2.6.4/po/da.gmo
 flex-2.6.4/src/Makefile.in
 flex-2.6.4/tests/Makefile.in
-flex-2.6.4/tools/git2cl
-flex-2.6.4/tools/Makefile.in
+flex-2.6.4/tools/
 flex-2.6.4/ABOUT-NLS
 flex-2.6.4/aclocal.m4
 flex-2.6.4/autogen.sh
