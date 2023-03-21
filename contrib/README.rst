@@ -1,9 +1,6 @@
-========================
-``celeste-src/contrib/``
-========================
+============
+``contrib/``
+============
 
-This contains external projects that apart of or used in the base Celeste Linux image.
-
-Listing
-=======
-* ``zlib/``: deflate/gz compression library
+This directory is reserved for holding the build infrastructure of optional
+components from the ``extern/reciprocal`` and ``extern/restrictive`` directories.
