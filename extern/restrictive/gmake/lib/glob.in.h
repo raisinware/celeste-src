@@ -67,9 +67,7 @@ extern "C" {
 #endif
 
 /* Structure describing a globbing run.  */
-#if !defined _AMIGA && !defined VMS /* Buggy compiler.   */
 struct stat;
-#endif
 typedef struct
   {
     size_t gl_pathc;		/* Count of paths matched by the pattern.  */
@@ -83,11 +81,7 @@ typedef struct
     struct dirent *(*gl_readdir) (void *);
     void * (*gl_opendir) (const char *);
     int (*gl_lstat) (const char *, struct stat *);
-#if defined(VMS) && defined(__DECC) && !defined(_POSIX_C_SOURCE)
-    int (*gl_stat) (const char *, struct stat *, ...);
-#else
     int (*gl_stat) (const char *, struct stat *);
-#endif
   } glob_t;
 
 #ifdef _LARGEFILE64_SOURCE

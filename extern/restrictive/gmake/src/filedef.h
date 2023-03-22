@@ -14,6 +14,9 @@ A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
+#pragma once
+
+#include "makeint.h"
 
 /* Structure that represents the info on one file
    that the makefile says how to make.
@@ -139,13 +142,8 @@ void print_file_data_base (void);
 int try_implicit_rule (struct file *file, unsigned int depth);
 int stemlen_compare (const void *v1, const void *v2);
 
-#if FILE_TIMESTAMP_HI_RES
 # define FILE_TIMESTAMP_STAT_MODTIME(fname, st) \
     file_timestamp_cons (fname, (st).st_mtime, (st).ST_MTIM_NSEC)
-#else
-# define FILE_TIMESTAMP_STAT_MODTIME(fname, st) \
-    file_timestamp_cons (fname, (st).st_mtime, 0)
-#endif
 
 /* If FILE_TIMESTAMP is 64 bits (or more), use nanosecond resolution.
    (Multiply by 2**30 instead of by 10**9 to save time at the cost of

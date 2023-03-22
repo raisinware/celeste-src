@@ -30,20 +30,6 @@ this program.  If not, see <https://www.gnu.org/licenses/>.  */
 #include <sys/file.h>
 #endif
 
-#ifdef VMS
-#include <starlet.h>
-#endif
-#ifdef WINDOWS32
-#include <windows.h>
-#include <io.h>
-#include <sys/stat.h>
-#if defined(_MSC_VER) && _MSC_VER > 1200
-/* VC7 or later supports _stat64 to access 64-bit file size. */
-#define STAT _stat64
-#else
-#define STAT stat
-#endif
-#endif
 
 
 /* The test for circular dependencies is based on the 'updating' bit in
@@ -1431,13 +1417,7 @@ f_mtime (struct file *file, int search)
               /* If we found it in VPATH, see if it's in GPATH too; if so,
                  change the name right now; if not, defer until after the
                  dependencies are updated. */
-#ifndef VMS
               name_len = strlen (name) - strlen (file->name) - 1;
-#else
-              name_len = strlen (name) - strlen (file->name);
-              if (name[name_len - 1] == '/')
-                  name_len--;
-#endif
               if (gpath_search (name, name_len))
                 {
                   rename_file (file, name);
@@ -1469,16 +1449,6 @@ f_mtime (struct file *file, int search)
 
       FILE_TIMESTAMP adjusted_mtime = mtime;
 
-#if defined(WINDOWS32) || defined(__MSDOS__)
-      /* Experimentation has shown that FAT filesystems can set file times
-         up to 3 seconds into the future!  Play it safe.  */
-
-#define FAT_ADJ_OFFSET  (FILE_TIMESTAMP) 3
-
-      FILE_TIMESTAMP adjustment = FAT_ADJ_OFFSET << FILE_TIMESTAMP_LO_BITS;
-      if (ORDINARY_MTIME_MIN + adjustment <= adjusted_mtime)
-        adjusted_mtime -= adjustment;
-#endif
 
       /* If the file's time appears to be in the future, update our
          concept of the present and try once more.  */
@@ -1547,56 +1517,10 @@ static FILE_TIMESTAMP
 name_mtime (const char *name)
 {
   FILE_TIMESTAMP mtime;
-#if defined(WINDOWS32)
-  struct STAT st;
-#else
   struct stat st;
-#endif
   int e;
 
-#if defined(WINDOWS32)
-  {
-    char tem[MAX_PATH+1], *tstart, *tend;
-    const char *p = name + strlen (name);
-
-    /* Remove any trailing slashes and "."/"..".  MS-Windows stat
-       fails on valid directories if NAME ends in a slash, and we need
-       to emulate the Posix behavior where stat on "foo/" or "foo/."
-       succeeds ONLY if "foo" is a directory. */
-    if (p > name)
-      {
-        memcpy (tem, name, p - name + 1);
-        tstart = tem;
-        if (tstart[1] == ':')
-          tstart += 2;
-        tend = tem + (p - name - 1);
-        if (*tend == '.' && tend > tstart)
-          tend--;
-        if (*tend == '.' && tend > tstart)
-          tend--;
-        for ( ; tend > tstart && ISDIRSEP (*tend); tend--)
-          *tend = '\0';
-      }
-    else
-      {
-        tem[0] = '\0';
-        tend = &tem[0];
-      }
-
-#if defined(WINDOWS32)
-    e = STAT (tem, &st);
-#else
-    e = stat (tem, &st);
-#endif
-    if (e == 0 && !_S_ISDIR (st.st_mode) && tend < tem + (p - name - 1))
-      {
-        errno = ENOTDIR;
-        e = -1;
-      }
-  }
-#else
   EINTRLOOP (e, stat (name, &st));
-#endif
   if (e == 0)
     mtime = FILE_TIMESTAMP_STAT_MODTIME (name, st);
   else if (errno == ENOENT || errno == ENOTDIR)
@@ -1689,17 +1613,8 @@ library_search (const char *lib, FILE_TIMESTAMP *mtime_ptr)
 {
   static const char *dirs[] =
     {
-#ifndef _AMIGA
       "/lib",
       "/usr/lib",
-#endif
-#if defined(WINDOWS32) && !defined(LIBDIR)
-/*
- * This is completely up to the user at product install time. Just define
- * a placeholder.
- */
-#define LIBDIR "."
-#endif
       LIBDIR,                   /* Defined by configuration.  */
       0
     };

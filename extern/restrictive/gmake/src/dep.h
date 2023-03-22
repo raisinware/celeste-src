@@ -14,6 +14,9 @@ A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
+#pragma once
+
+#include "makeint.h"
 
 /* Structure used in chains of names, for parsing and globbing.  */
 
@@ -89,12 +92,8 @@ struct goaldep
 #define PARSE_SIMPLE_SEQ(_s,_t) \
             (_t *)parse_file_seq ((_s),sizeof (_t),MAP_NUL,NULL,PARSEFS_NONE)
 
-#ifdef VMS
-void *parse_file_seq ();
-#else
 void *parse_file_seq (char **stringp, size_t size,
                       int stopmap, const char *prefix, int flags);
-#endif
 
 char *tilde_expand (const char *name);
 

@@ -21,16 +21,8 @@ this program.  If not, see <https://www.gnu.org/licenses/>.  */
 #include "variable.h"
 #include "job.h"
 #include "commands.h"
-#ifdef WINDOWS32
-#include <windows.h>
-#include "w32err.h"
-#endif
 
-#if VMS
-# define FILE_LIST_SEPARATOR (vms_comma_separator ? ',' : ' ')
-#else
 # define FILE_LIST_SEPARATOR ' '
-#endif
 
 
 static unsigned long
@@ -483,46 +475,6 @@ volatile sig_atomic_t handling_fatal_signal = 0;
 void
 fatal_error_signal (int sig)
 {
-#ifdef __MSDOS__
-  extern int dos_status, dos_command_running;
-
-  if (dos_command_running)
-    {
-      /* That was the child who got the signal, not us.  */
-      dos_status |= (sig << 8);
-      return;
-    }
-  remove_intermediates (1);
-  exit (EXIT_FAILURE);
-#else /* not __MSDOS__ */
-#ifdef _AMIGA
-  remove_intermediates (1);
-  if (sig == SIGINT)
-     fputs (_("*** Break.\n"), stderr);
-
-  exit (10);
-#else /* not Amiga */
-#ifdef WINDOWS32
-  extern HANDLE main_thread;
-
-  /* Windows creates a separate thread for handling Ctrl+C, so we need
-     to suspend the main thread, or else we will have race conditions
-     when both threads call reap_children.  */
-  if (main_thread)
-    {
-      DWORD susp_count = SuspendThread (main_thread);
-
-      if (susp_count != 0)
-        fprintf (stderr, "SuspendThread: suspend count = %lu\n", susp_count);
-      else if (susp_count == (DWORD)-1)
-        {
-          DWORD ierr = GetLastError ();
-
-          fprintf (stderr, "SuspendThread: error %lu: %s\n",
-                   ierr, map_windows32_error_to_string (ierr));
-        }
-    }
-#endif
   handling_fatal_signal = 1;
 
   /* Set the handling for this signal to the default.
@@ -588,20 +540,10 @@ fatal_error_signal (int sig)
     exit (MAKE_TROUBLE);
 #endif
 
-#ifdef WINDOWS32
-  if (main_thread)
-    CloseHandle (main_thread);
-  /* Cannot call W32_kill with a pid (it needs a handle).  The exit
-     status of 130 emulates what happens in Bash.  */
-  exit (130);
-#else
   /* Signal the same code; this time it will really be fatal.  The signal
      will be unblocked when we return and arrive then to kill us.  */
   if (kill (make_pid (), sig) < 0)
     pfatal_with_name ("kill");
-#endif /* not WINDOWS32 */
-#endif /* not Amiga */
-#endif /* not __MSDOS__  */
 }
 
 /* Delete FILE unless it's precious or not actually a file (phony),

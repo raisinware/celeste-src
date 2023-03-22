@@ -34,11 +34,6 @@ this program.  If not, see <https://www.gnu.org/licenses/>.  */
 # include <sys/file.h>
 #endif
 
-#ifdef WINDOWS32
-# include <windows.h>
-# include <io.h>
-# include "sub_proc.h"
-#endif /* WINDOWS32 */
 
 struct output *output_context = NULL;
 unsigned int stdio_traced = 0;
@@ -151,13 +146,6 @@ pump_from_tmp (int from, FILE *to)
 {
   static char buffer[8192];
 
-#ifdef WINDOWS32
-  int prev_mode;
-
-  /* "from" is opened by open_tmpfd, which does it in binary mode, so
-     we need the mode of "to" to match that.  */
-  prev_mode = _setmode (fileno (to), _O_BINARY);
-#endif
 
   if (lseek (from, 0, SEEK_SET) == -1)
     perror ("lseek()");
@@ -178,11 +166,6 @@ pump_from_tmp (int from, FILE *to)
       fflush (to);
     }
 
-#ifdef WINDOWS32
-  /* Switch "to" back to its original mode, so that log messages by
-     Make have the same EOL format as without --output-sync.  */
-  _setmode (fileno (to), prev_mode);
-#endif
 }
 
 /* Returns a file descriptor to a temporary file, that will be automatically

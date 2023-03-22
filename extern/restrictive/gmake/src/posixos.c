@@ -73,7 +73,6 @@ check_io_state ()
   return state;
 }
 
-#if defined(MAKE_JOBSERVER)
 
 #define FIFO_PREFIX    "fifo:"
 
@@ -557,10 +556,6 @@ set_child_handler_action_flags (int set_handler, int set_alarm)
 {
   struct sigaction sa;
 
-#ifdef __EMX__
-  /* The child handler must be turned off here.  */
-  signal (SIGCHLD, SIG_DFL);
-#endif
 
   memset (&sa, '\0', sizeof sa);
   sa.sa_handler = child_handler;
@@ -635,7 +630,6 @@ jobserver_acquire (int timeout)
 
 #endif /* HAVE_PSELECT */
 
-#endif /* MAKE_JOBSERVER */
 
 #if !defined(NO_OUTPUT_SYNC)
 

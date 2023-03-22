@@ -20,13 +20,6 @@ this program.  If not, see <https://www.gnu.org/licenses/>.  */
 #define IO_STDOUT_OK            0x0008
 #define IO_STDERR_OK            0x0010
 
-#if defined(VMS) || defined(_AMIGA) || defined(__MSDOS__)
-# define check_io_state()  (IO_STDIN_OK|IO_STDOUT_OK|IO_STDERR_OK)
-# define fd_inherit(_i)    (0)
-# define fd_noinherit(_i)  (0)
-# define fd_set_append(_i) (void)(0)
-# define os_anontmp()      (-1)
-#else
 
 /* Determine the state of stdin/stdout/stderr.  */
 unsigned int check_io_state (void);
@@ -40,11 +33,9 @@ void fd_set_append (int);
 
 /* Return a file descriptor for a new anonymous temp file, or -1.  */
 int os_anontmp (void);
-#endif
 
 /* This section provides OS-specific functions to support the jobserver.  */
 
-#ifdef MAKE_JOBSERVER
 
 /* Returns 1 if the jobserver is enabled, else 0.  */
 unsigned int jobserver_enabled (void);
@@ -93,23 +84,6 @@ void jobserver_pre_acquire (void);
    exiting or a timeout.    */
 unsigned int jobserver_acquire (int timeout);
 
-#else
-
-#define jobserver_enabled()             (0)
-#define jobserver_setup(_slots, _style) (0)
-#define jobserver_parse_auth(_auth)     (0)
-#define jobserver_get_auth()            (NULL)
-#define jobserver_get_invalid_auth()    (NULL)
-#define jobserver_clear()               (void)(0)
-#define jobserver_release(_fatal)       (void)(0)
-#define jobserver_acquire_all()         (0)
-#define jobserver_signal()              (void)(0)
-#define jobserver_pre_child(_r)         (void)(0)
-#define jobserver_post_child(_r)        (void)(0)
-#define jobserver_pre_acquire()         (void)(0)
-#define jobserver_acquire(_tmout)       (0)
-
-#endif  /* MAKE_JOBSERVER */
 
 #ifndef NO_OUTPUT_SYNC
 
@@ -151,8 +125,4 @@ void osync_release (void);
 #endif  /* NO_OUTPUT_SYNC */
 
 /* Create a "bad" file descriptor for stdin when parallel jobs are run.  */
-#if defined(VMS) || defined(WINDOWS32) || defined(_AMIGA) || defined(__MSDOS__)
-# define get_bad_stdin() (-1)
-#else
 int get_bad_stdin (void);
-#endif

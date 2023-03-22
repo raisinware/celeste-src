@@ -14,19 +14,14 @@ A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
+#pragma once
+
 #include "output.h"
+#include <sys/types.h>
 
 /* Structure describing a running or dead child process.  */
 
-#ifdef VMS
-#define VMSCHILD                                                        \
-    char *comname;              /* Temporary command file name */       \
-    int efn;                    /* Completion event flag number */      \
-    int cstatus;                /* Completion status */                 \
-    int vms_launch_status;      /* non-zero if lib$spawn, etc failed */
-#else
 #define VMSCHILD
-#endif
 
 #define CHILDBASE                                               \
     char *cmd_name;       /* Allocated copy of command run.  */ \
@@ -80,11 +75,7 @@ char **construct_command_argv (char *line, char **restp, struct file *file,
 
 pid_t child_execute_job (struct childbase *child, int good_stdin, char **argv);
 
-#ifdef _AMIGA
-void exec_command (char **argv) NORETURN;
-#else
 pid_t exec_command (char **argv, char **envp);
-#endif
 
 void unblock_all_sigs (void);
 

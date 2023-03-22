@@ -26,9 +26,6 @@ this program.  If not, see <https://www.gnu.org/licenses/>.  */
 #include "variable.h"
 #include "os.h"
 #include "rule.h"
-#ifdef WINDOWS32
-#include "pathstuff.h"
-#endif
 #include "hash.h"
 
 /* Incremented every time we enter target_environment().  */
@@ -215,33 +212,6 @@ define_variable_in_set (const char *name, size_t length,
   var_slot = (struct variable **) hash_find_slot (&set->table, &var_key);
   v = *var_slot;
 
-#ifdef VMS
-  /* VMS does not populate envp[] with DCL symbols and logical names which
-     historically are mapped to environment variables.
-     If the variable is not yet defined, then we need to check if getenv()
-     can find it.  Do not do this for origin == o_env to avoid infinite
-     recursion */
-  if (HASH_VACANT (v) && (origin != o_env))
-    {
-      struct variable * vms_variable;
-      char * vname = alloca (length + 1);
-      char * vvalue;
-
-      strncpy (vname, name, length);
-      vvalue = getenv(vname);
-
-      /* Values starting with '$' are probably foreign commands.
-         We want to treat them as Shell aliases and not look them up here */
-      if ((vvalue != NULL) && (vvalue[0] != '$'))
-        {
-          vms_variable =  lookup_variable(name, length);
-          /* Refresh the slot */
-          var_slot = (struct variable **) hash_find_slot (&set->table,
-                                                          &var_key);
-          v = *var_slot;
-        }
-    }
-#endif
 
   if (env_overrides && origin == o_env)
     origin = o_env_override;
@@ -479,62 +449,6 @@ lookup_variable (const char *name, size_t length)
       is_parent |= setlist->next_is_parent;
     }
 
-#ifdef VMS
-  /* VMS doesn't populate envp[] with DCL symbols and logical names, which
-     historically are mapped to environment variables and returned by
-     getenv().  */
-  {
-    char *vname = alloca (length + 1);
-    char *value;
-    strncpy (vname, name, length);
-    vname[length] = 0;
-    value = getenv (vname);
-    if (value != 0)
-      {
-        char *sptr;
-        int scnt;
-
-        sptr = value;
-        scnt = 0;
-
-        while ((sptr = strchr (sptr, '$')))
-          {
-            scnt++;
-            sptr++;
-          }
-
-        if (scnt > 0)
-          {
-            char *nvalue;
-            char *nptr;
-
-            nvalue = alloca (strlen (value) + scnt + 1);
-            sptr = value;
-            nptr = nvalue;
-
-            while (*sptr)
-              {
-                if (*sptr == '$')
-                  {
-                    *nptr++ = '$';
-                    *nptr++ = '$';
-                  }
-                else
-                  {
-                    *nptr++ = *sptr;
-                  }
-                sptr++;
-              }
-
-            *nptr = '\0';
-            return define_variable (vname, length, nvalue, o_env, 1);
-
-          }
-
-        return define_variable (vname, length, value, o_env, 1);
-      }
-  }
-#endif /* VMS */
 
   return 0;
 }
@@ -871,90 +785,15 @@ define_automatic_variables (void)
   define_variable_cname ("MAKE_VERSION", buf, o_default, 0);
   define_variable_cname ("MAKE_HOST", make_host, o_default, 0);
 
-#ifdef  __MSDOS__
-  /* Allow to specify a special shell just for Make,
-     and use $COMSPEC as the default $SHELL when appropriate.  */
-  {
-    static char shell_str[] = "SHELL";
-    const int shlen = sizeof (shell_str) - 1;
-    struct variable *mshp = lookup_variable ("MAKESHELL", 9);
-    struct variable *comp = lookup_variable ("COMSPEC", 7);
-
-    /* $(MAKESHELL) overrides $(SHELL) even if -e is in effect.  */
-    if (mshp)
-      (void) define_variable (shell_str, shlen,
-                              mshp->value, o_env_override, 0);
-    else if (comp)
-      {
-        /* $(COMSPEC) shouldn't override $(SHELL).  */
-        struct variable *shp = lookup_variable (shell_str, shlen);
-
-        if (!shp)
-          (void) define_variable (shell_str, shlen, comp->value, o_env, 0);
-      }
-  }
-#elif defined(__EMX__)
-  {
-    static char shell_str[] = "SHELL";
-    const int shlen = sizeof (shell_str) - 1;
-    struct variable *shell = lookup_variable (shell_str, shlen);
-    struct variable *replace = lookup_variable ("MAKESHELL", 9);
-
-    /* if $MAKESHELL is defined in the environment assume o_env_override */
-    if (replace && *replace->value && replace->origin == o_env)
-      replace->origin = o_env_override;
-
-    /* if $MAKESHELL is not defined use $SHELL but only if the variable
-       did not come from the environment */
-    if (!replace || !*replace->value)
-      if (shell && *shell->value && (shell->origin == o_env
-          || shell->origin == o_env_override))
-        {
-          /* overwrite whatever we got from the environment */
-          free (shell->value);
-          shell->value = xstrdup (default_shell);
-          shell->origin = o_default;
-        }
-
-    /* Some people do not like cmd to be used as the default
-       if $SHELL is not defined in the Makefile.
-       With -DNO_CMD_DEFAULT you can turn off this behaviour */
-# ifndef NO_CMD_DEFAULT
-    /* otherwise use $COMSPEC */
-    if (!replace || !*replace->value)
-      replace = lookup_variable ("COMSPEC", 7);
-
-    /* otherwise use $OS2_SHELL */
-    if (!replace || !*replace->value)
-      replace = lookup_variable ("OS2_SHELL", 9);
-# else
-#   warning NO_CMD_DEFAULT: GNU Make will not use CMD.EXE as default shell
-# endif
-
-    if (replace && *replace->value)
-      /* overwrite $SHELL */
-      (void) define_variable (shell_str, shlen, replace->value,
-                              replace->origin, 0);
-    else
-      /* provide a definition if there is none */
-      (void) define_variable (shell_str, shlen, default_shell,
-                              o_default, 0);
-  }
-
-#endif
 
   /* This won't override any definition, but it will provide one if there
      isn't one there.  */
   v = define_variable_cname ("SHELL", default_shell, o_default, 0);
-#ifdef __MSDOS__
-  v->export = v_export;  /*  Export always SHELL.  */
-#endif
 
   /* On MSDOS we do use SHELL from environment, since it isn't a standard
      environment variable on MSDOS, so whoever sets it, does that on purpose.
      On OS/2 we do not use SHELL from environment but we have already handled
      that problem above. */
-#if !defined(__MSDOS__) && !defined(__EMX__)
   /* Don't let SHELL come from the environment.  */
   if (*v->value == '\0' || v->origin == o_env || v->origin == o_env_override)
     {
@@ -962,7 +801,6 @@ define_automatic_variables (void)
       v->origin = o_file;
       v->value = xstrdup (default_shell);
     }
-#endif
 
   /* Make sure MAKEFILES gets exported if it is set.  */
   v = define_variable_cname ("MAKEFILES", "", o_default, 0);
@@ -971,23 +809,6 @@ define_automatic_variables (void)
   /* Define the magic D and F variables in terms of
      the automatic variables they are variations of.  */
 
-#if defined(__MSDOS__) || defined(WINDOWS32)
-  /* For consistency, remove the trailing backslash as well as slash.  */
-  define_variable_cname ("@D", "$(patsubst %/,%,$(patsubst %\\,%,$(dir $@)))",
-                         o_automatic, 1);
-  define_variable_cname ("%D", "$(patsubst %/,%,$(patsubst %\\,%,$(dir $%)))",
-                         o_automatic, 1);
-  define_variable_cname ("*D", "$(patsubst %/,%,$(patsubst %\\,%,$(dir $*)))",
-                         o_automatic, 1);
-  define_variable_cname ("<D", "$(patsubst %/,%,$(patsubst %\\,%,$(dir $<)))",
-                         o_automatic, 1);
-  define_variable_cname ("?D", "$(patsubst %/,%,$(patsubst %\\,%,$(dir $?)))",
-                         o_automatic, 1);
-  define_variable_cname ("^D", "$(patsubst %/,%,$(patsubst %\\,%,$(dir $^)))",
-                         o_automatic, 1);
-  define_variable_cname ("+D", "$(patsubst %/,%,$(patsubst %\\,%,$(dir $+)))",
-                         o_automatic, 1);
-#else  /* not __MSDOS__, not WINDOWS32 */
   define_variable_cname ("@D", "$(patsubst %/,%,$(dir $@))", o_automatic, 1);
   define_variable_cname ("%D", "$(patsubst %/,%,$(dir $%))", o_automatic, 1);
   define_variable_cname ("*D", "$(patsubst %/,%,$(dir $*))", o_automatic, 1);
@@ -995,7 +816,6 @@ define_automatic_variables (void)
   define_variable_cname ("?D", "$(patsubst %/,%,$(dir $?))", o_automatic, 1);
   define_variable_cname ("^D", "$(patsubst %/,%,$(dir $^))", o_automatic, 1);
   define_variable_cname ("+D", "$(patsubst %/,%,$(dir $+))", o_automatic, 1);
-#endif
   define_variable_cname ("@F", "$(notdir $@)", o_automatic, 1);
   define_variable_cname ("%F", "$(notdir $%)", o_automatic, 1);
   define_variable_cname ("*F", "$(notdir $*)", o_automatic, 1);
@@ -1210,15 +1030,6 @@ target_environment (struct file *file, int recursive)
               }
           }
 
-#ifdef WINDOWS32
-        if (streq (v->name, "Path") || streq (v->name, "PATH"))
-          {
-            if (!cp)
-              cp = xstrdup (value);
-            value = convert_Path_to_windows32 (cp, ';');
-            goto setit;
-          }
-#endif
 
       setit:
         *result++ = xstrdup (concat (3, v->name, "=", value));
@@ -1442,136 +1253,6 @@ do_variable_definition (const floc *flocp, const char *varname,
 
   assert (newval);
 
-#ifdef __MSDOS__
-  /* Many Unix Makefiles include a line saying "SHELL=/bin/sh", but
-     non-Unix systems don't conform to this default configuration (in
-     fact, most of them don't even have '/bin').  On the other hand,
-     $SHELL in the environment, if set, points to the real pathname of
-     the shell.
-     Therefore, we generally won't let lines like "SHELL=/bin/sh" from
-     the Makefile override $SHELL from the environment.  But first, we
-     look for the basename of the shell in the directory where SHELL=
-     points, and along the $PATH; if it is found in any of these places,
-     we define $SHELL to be the actual pathname of the shell.  Thus, if
-     you have bash.exe installed as d:/unix/bash.exe, and d:/unix is on
-     your $PATH, then SHELL=/usr/local/bin/bash will have the effect of
-     defining SHELL to be "d:/unix/bash.exe".  */
-  if ((origin == o_file || origin == o_override)
-      && strcmp (varname, "SHELL") == 0)
-    {
-      PATH_VAR (shellpath);
-      extern char * __dosexec_find_on_path (const char *, char *[], char *);
-
-      /* See if we can find "/bin/sh.exe", "/bin/sh.com", etc.  */
-      if (__dosexec_find_on_path (p, NULL, shellpath))
-        {
-          char *tp;
-
-          for (tp = shellpath; *tp; tp++)
-            if (*tp == '\\')
-              *tp = '/';
-
-          v = define_variable_loc (varname, strlen (varname),
-                                   shellpath, origin, flavor == f_recursive,
-                                   flocp);
-        }
-      else
-        {
-          const char *shellbase, *bslash;
-          struct variable *pathv = lookup_variable ("PATH", 4);
-          char *path_string;
-          char *fake_env[2];
-          size_t pathlen = 0;
-
-          shellbase = strrchr (newval, '/');
-          bslash = strrchr (newval, '\\');
-          if (!shellbase || bslash > shellbase)
-            shellbase = bslash;
-          if (!shellbase && newval[1] == ':')
-            shellbase = newval + 1;
-          if (shellbase)
-            shellbase++;
-          else
-            shellbase = newval;
-
-          /* Search for the basename of the shell (with standard
-             executable extensions) along the $PATH.  */
-          if (pathv)
-            pathlen = strlen (pathv->value);
-          path_string = xmalloc (5 + pathlen + 2 + 1);
-          /* On MSDOS, current directory is considered as part of $PATH.  */
-          sprintf (path_string, "PATH=.;%s", pathv ? pathv->value : "");
-          fake_env[0] = path_string;
-          fake_env[1] = 0;
-          if (__dosexec_find_on_path (shellbase, fake_env, shellpath))
-            {
-              char *tp;
-
-              for (tp = shellpath; *tp; tp++)
-                if (*tp == '\\')
-                  *tp = '/';
-
-              v = define_variable_loc (varname, strlen (varname),
-                                       shellpath, origin,
-                                       flavor == f_recursive, flocp);
-            }
-          else
-            v = lookup_variable (varname, strlen (varname));
-
-          free (path_string);
-        }
-    }
-  else
-#endif /* __MSDOS__ */
-#ifdef WINDOWS32
-  if ((origin == o_file || origin == o_override || origin == o_command)
-      && streq (varname, "SHELL"))
-    {
-      extern const char *default_shell;
-
-      /* Call shell locator function. If it returns TRUE, then
-         set no_default_sh_exe to indicate sh was found and
-         set new value for SHELL variable.  */
-
-      if (find_and_set_default_shell (newval))
-        {
-          v = define_variable_in_set (varname, strlen (varname), default_shell,
-                                      origin, flavor == f_recursive,
-                                      (target_var
-                                       ? current_variable_set_list->set
-                                       : NULL),
-                                      flocp);
-          no_default_sh_exe = 0;
-        }
-      else
-        {
-          char *tp = alloc_value;
-
-          alloc_value = allocated_variable_expand (newval);
-
-          if (find_and_set_default_shell (alloc_value))
-            {
-              v = define_variable_in_set (varname, strlen (varname), newval,
-                                          origin, flavor == f_recursive,
-                                          (target_var
-                                           ? current_variable_set_list->set
-                                           : NULL),
-                                          flocp);
-              no_default_sh_exe = 0;
-            }
-          else
-            v = lookup_variable (varname, strlen (varname));
-
-          free (tp);
-        }
-    }
-  else
-    v = NULL;
-
-  /* If not $SHELL, or if $SHELL points to a program we didn't find,
-     just process this variable "as usual".  */
-  if (!v)
-#endif
 
   /* If we are defining variables inside an $(eval ...), we might have a
      different variable context pushed, not the global context (maybe we're
@@ -2017,24 +1698,3 @@ print_target_variables (const struct file *file)
     }
 }
 
-#ifdef WINDOWS32
-void
-sync_Path_environment ()
-{
-  static char *environ_path = NULL;
-  char *oldpath = environ_path;
-  char *path = allocated_variable_expand ("PATH=$(PATH)");
-
-  if (!path)
-    return;
-
-  /* Convert the value of PATH into something WINDOWS32 world can grok.
-    Note: convert_Path_to_windows32 must see only the value of PATH,
-    and see it from its first character, to do its tricky job.  */
-  convert_Path_to_windows32 (path + CSTRLEN ("PATH="), ';');
-
-  environ_path = path;
-  putenv (environ_path);
-  free (oldpath);
-}
-#endif

@@ -23,9 +23,6 @@ this program.  If not, see <https://www.gnu.org/licenses/>.  */
 #include "commands.h"
 #include "debug.h"
 
-#ifdef _AMIGA
-#include "amiga.h"
-#endif
 
 
 struct function_table_entry
@@ -524,24 +521,7 @@ func_notdir_suffix (char *o, char **argv, const char *funcname)
   int is_suffix = funcname[0] == 's';
   int is_notdir = !is_suffix;
   int stop = MAP_DIRSEP | (is_suffix ? MAP_DOT : 0);
-#ifdef VMS
-  /* For VMS list_iterator points to a comma separated list. To use the common
-     [find_]next_token, create a local copy and replace the commas with
-     spaces. Obviously, there is a problem if there is a ',' in the VMS filename
-     (can only happen on ODS5), the same problem as with spaces in filenames,
-     which seems to be present in make on all platforms. */
-  char *vms_list_iterator = alloca(strlen(list_iterator) + 1);
-  int i;
-  for (i = 0; list_iterator[i]; i++)
-    if (list_iterator[i] == ',')
-      vms_list_iterator[i] = ' ';
-    else
-      vms_list_iterator[i] = list_iterator[i];
-  vms_list_iterator[i] = list_iterator[i];
-  while ((p2 = find_next_token((const char**) &vms_list_iterator, &len)) != 0)
-#else
   while ((p2 = find_next_token (&list_iterator, &len)) != 0)
-#endif
     {
       const char *p = p2 + len - 1;
 
@@ -569,11 +549,6 @@ func_notdir_suffix (char *o, char **argv, const char *funcname)
 
       if (is_notdir || p >= p2)
         {
-#ifdef VMS
-          if (vms_comma_separator)
-            o = variable_buffer_output (o, ",", 1);
-          else
-#endif
           o = variable_buffer_output (o, " ", 1);
 
           doneany = 1;
@@ -600,20 +575,7 @@ func_basename_dir (char *o, char **argv, const char *funcname)
   int is_basename = funcname[0] == 'b';
   int is_dir = !is_basename;
   int stop = MAP_DIRSEP | (is_basename ? MAP_DOT : 0) | MAP_NUL;
-#ifdef VMS
-  /* As in func_notdir_suffix ... */
-  char *vms_p3 = alloca (strlen(p3) + 1);
-  int i;
-  for (i = 0; p3[i]; i++)
-    if (p3[i] == ',')
-      vms_p3[i] = ' ';
-    else
-      vms_p3[i] = p3[i];
-  vms_p3[i] = p3[i];
-  while ((p2 = find_next_token((const char**) &vms_p3, &len)) != 0)
-#else
   while ((p2 = find_next_token (&p3, &len)) != 0)
-#endif
     {
       const char *p = p2 + len - 1;
       while (p >= p2 && ! STOP_SET (*p, stop))
@@ -629,30 +591,11 @@ func_basename_dir (char *o, char **argv, const char *funcname)
         o = variable_buffer_output (o, p2, 2);
 #endif
       else if (is_dir)
-#ifdef VMS
-        {
-          extern int vms_report_unix_paths;
-          if (vms_report_unix_paths)
-            o = variable_buffer_output (o, "./", 2);
-          else
-            o = variable_buffer_output (o, "[]", 2);
-        }
-#else
-#ifndef _AMIGA
       o = variable_buffer_output (o, "./", 2);
-#else
-      ; /* Just a nop...  */
-#endif /* AMIGA */
-#endif /* !VMS */
       else
         /* The entire name is the basename.  */
         o = variable_buffer_output (o, p2, len);
 
-#ifdef VMS
-      if (vms_comma_separator)
-        o = variable_buffer_output (o, ",", 1);
-      else
-#endif
         o = variable_buffer_output (o, " ", 1);
 
       doneany = 1;
@@ -1528,12 +1471,8 @@ func_and (char *o, char **argv, const char *funcname UNUSED)
 static char *
 func_wildcard (char *o, char **argv, const char *funcname UNUSED)
 {
-#ifdef _AMIGA
-   o = wildcard_expansion (argv[0], o);
-#else
    char *p = string_glob (argv[0]);
    o = variable_buffer_output (o, p, strlen (p));
-#endif
    return o;
 }
 
@@ -1630,244 +1569,31 @@ shell_completed (int exit_code, int exit_sig)
   define_variable_cname (".SHELLSTATUS", buf, o_override, 0);
 }
 
-#ifdef WINDOWS32
-/*untested*/
-
-#include <windows.h>
-#include <io.h>
-#include "sub_proc.h"
 
 
-int
-windows32_openpipe (int *pipedes, int errfd, pid_t *pid_p, char **command_argv, char **envp)
-{
-  SECURITY_ATTRIBUTES saAttr;
-  HANDLE hIn = INVALID_HANDLE_VALUE;
-  HANDLE hErr = INVALID_HANDLE_VALUE;
-  HANDLE hChildOutRd;
-  HANDLE hChildOutWr;
-  HANDLE hProcess, tmpIn, tmpErr;
-  DWORD e;
-
-  /* Set status for return.  */
-  pipedes[0] = pipedes[1] = -1;
-  *pid_p = (pid_t)-1;
-
-  saAttr.nLength = sizeof (SECURITY_ATTRIBUTES);
-  saAttr.bInheritHandle = TRUE;
-  saAttr.lpSecurityDescriptor = NULL;
-
-  /* Standard handles returned by GetStdHandle can be NULL or
-     INVALID_HANDLE_VALUE if the parent process closed them.  If that
-     happens, we open the null device and pass its handle to
-     process_begin below as the corresponding handle to inherit.  */
-  tmpIn = GetStdHandle (STD_INPUT_HANDLE);
-  if (DuplicateHandle (GetCurrentProcess (), tmpIn,
-                       GetCurrentProcess (), &hIn,
-                       0, TRUE, DUPLICATE_SAME_ACCESS) == FALSE)
-    {
-      e = GetLastError ();
-      if (e == ERROR_INVALID_HANDLE)
-        {
-          tmpIn = CreateFile ("NUL", GENERIC_READ,
-                              FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-                              OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-          if (tmpIn != INVALID_HANDLE_VALUE
-              && DuplicateHandle (GetCurrentProcess (), tmpIn,
-                                  GetCurrentProcess (), &hIn,
-                                  0, TRUE, DUPLICATE_SAME_ACCESS) == FALSE)
-            CloseHandle (tmpIn);
-        }
-      if (hIn == INVALID_HANDLE_VALUE)
-        {
-          ON (error, NILF,
-              _("windows32_openpipe: DuplicateHandle(In) failed (e=%lu)\n"), e);
-          return -1;
-        }
-    }
-  tmpErr = (HANDLE)_get_osfhandle (errfd);
-  if (DuplicateHandle (GetCurrentProcess (), tmpErr,
-                       GetCurrentProcess (), &hErr,
-                       0, TRUE, DUPLICATE_SAME_ACCESS) == FALSE)
-    {
-      e = GetLastError ();
-      if (e == ERROR_INVALID_HANDLE)
-        {
-          tmpErr = CreateFile ("NUL", GENERIC_WRITE,
-                               FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-                               OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-          if (tmpErr != INVALID_HANDLE_VALUE
-              && DuplicateHandle (GetCurrentProcess (), tmpErr,
-                                  GetCurrentProcess (), &hErr,
-                                  0, TRUE, DUPLICATE_SAME_ACCESS) == FALSE)
-            CloseHandle (tmpErr);
-        }
-      if (hErr == INVALID_HANDLE_VALUE)
-        {
-          ON (error, NILF,
-              _("windows32_openpipe: DuplicateHandle(Err) failed (e=%lu)\n"), e);
-          return -1;
-        }
-    }
-
-  if (! CreatePipe (&hChildOutRd, &hChildOutWr, &saAttr, 0))
-    {
-      ON (error, NILF, _("CreatePipe() failed (e=%lu)\n"), GetLastError());
-      return -1;
-    }
-
-  hProcess = process_init_fd (hIn, hChildOutWr, hErr);
-
-  if (!hProcess)
-    {
-      O (error, NILF, _("windows32_openpipe(): process_init_fd() failed\n"));
-      return -1;
-    }
-
-  if (! process_begin (hProcess, command_argv, envp, command_argv[0], NULL))
-    {
-      /* register process for wait */
-      process_register (hProcess);
-
-      /* set the pid for returning to caller */
-      *pid_p = (pid_t) hProcess;
-
-      /* set up to read data from child */
-      pipedes[0] = _open_osfhandle ((intptr_t) hChildOutRd, O_RDONLY);
-
-      /* this will be closed almost right away */
-      pipedes[1] = _open_osfhandle ((intptr_t) hChildOutWr, O_APPEND);
-      return 0;
-    }
-  else
-    {
-      /* reap/cleanup the failed process */
-      process_cleanup (hProcess);
-
-      /* close handles which were duplicated, they weren't used */
-      if (hIn != INVALID_HANDLE_VALUE)
-        CloseHandle (hIn);
-      if (hErr != INVALID_HANDLE_VALUE)
-        CloseHandle (hErr);
-
-      /* close pipe handles, they won't be used */
-      CloseHandle (hChildOutRd);
-      CloseHandle (hChildOutWr);
-
-      return -1;
-    }
-}
-#endif
-
-
-#ifdef __MSDOS__
-FILE *
-msdos_openpipe (int* pipedes, int *pidp, char *text)
-{
-  FILE *fpipe=0;
-  /* MSDOS can't fork, but it has 'popen'.  */
-  struct variable *sh = lookup_variable ("SHELL", 5);
-  int e;
-  extern int dos_command_running, dos_status;
-
-  /* Make sure not to bother processing an empty line.  */
-  NEXT_TOKEN (text);
-  if (*text == '\0')
-    return 0;
-
-  if (sh)
-    {
-      char buf[PATH_MAX + 7];
-      /* This makes sure $SHELL value is used by $(shell), even
-         though the target environment is not passed to it.  */
-      sprintf (buf, "SHELL=%s", sh->value);
-      putenv (buf);
-    }
-
-  e = errno;
-  errno = 0;
-  dos_command_running = 1;
-  dos_status = 0;
-  /* If dos_status becomes non-zero, it means the child process
-     was interrupted by a signal, like SIGINT or SIGQUIT.  See
-     fatal_error_signal in commands.c.  */
-  fpipe = popen (text, "rt");
-  dos_command_running = 0;
-  if (!fpipe || dos_status)
-    {
-      pipedes[0] = -1;
-      *pidp = -1;
-      if (dos_status)
-        errno = EINTR;
-      else if (errno == 0)
-        errno = ENOMEM;
-      if (fpipe)
-        pclose (fpipe);
-      shell_completed (127, 0);
-    }
-  else
-    {
-      pipedes[0] = fileno (fpipe);
-      *pidp = 42; /* Yes, the Meaning of Life, the Universe, and Everything! */
-      errno = e;
-    }
-  return fpipe;
-}
-#endif
 
 /*
   Do shell spawning, with the naughty bits for different OSes.
  */
 
-#ifdef VMS
-
-/* VMS can't do $(shell ...)  */
-
-char *
-func_shell_base (char *o, char **argv, int trim_newlines)
-{
-  fprintf (stderr, "This platform does not support shell\n");
-  die (MAKE_TROUBLE);
-  return NULL;
-}
-
-#define func_shell 0
-
-#else
-#ifndef _AMIGA
 char *
 func_shell_base (char *o, char **argv, int trim_newlines)
 {
   struct childbase child = {0};
   char *batch_filename = NULL;
   int errfd;
-#ifdef __MSDOS__
-  FILE *fpipe;
-#endif
   char **command_argv = NULL;
   int pipedes[2];
   pid_t pid;
 
-#ifndef __MSDOS__
-#ifdef WINDOWS32
-  /* Reset just_print_flag.  This is needed on Windows when batch files
-     are used to run the commands, because we normally refrain from
-     creating batch files under -n.  */
-  int j_p_f = just_print_flag;
-  just_print_flag = 0;
-#endif
 
   /* Construct the argument list.  */
   command_argv = construct_command_argv (argv[0], NULL, NULL, 0,
                                          &batch_filename);
   if (command_argv == 0)
     {
-#ifdef WINDOWS32
-      just_print_flag = j_p_f;
-#endif
       return o;
     }
-#endif /* !__MSDOS__ */
 
   /* Set up the output in case the shell writes something.  */
   output_start ();
@@ -1877,30 +1603,6 @@ func_shell_base (char *o, char **argv, int trim_newlines)
 
   child.environment = target_environment (NULL, 0);
 
-#if defined(__MSDOS__)
-  fpipe = msdos_openpipe (pipedes, &pid, argv[0]);
-  if (pipedes[0] < 0)
-    {
-      OS (error, reading_file, "pipe: %s", strerror (errno));
-      pid = -1;
-      goto done;
-    }
-
-#elif defined(WINDOWS32)
-  windows32_openpipe (pipedes, errfd, &pid, command_argv, child.environment);
-  /* Restore the value of just_print_flag.  */
-  just_print_flag = j_p_f;
-
-  if (pipedes[0] < 0)
-    {
-      /* Open of the pipe failed, mark as failed execution.  */
-      shell_completed (127, 0);
-      OS (error, reading_file, "pipe: %s", strerror (errno));
-      pid = -1;
-      goto done;
-    }
-
-#else
   if (pipe (pipedes) < 0)
     {
       OS (error, reading_file, "pipe: %s", strerror (errno));
@@ -1923,7 +1625,6 @@ func_shell_base (char *o, char **argv, int trim_newlines)
       shell_completed (127, 0);
       goto done;
     }
-#endif
 
   {
     char *buffer;
@@ -1932,7 +1633,6 @@ func_shell_base (char *o, char **argv, int trim_newlines)
 
     /* Record the PID for reap_children.  */
     shell_function_pid = pid;
-#ifndef  __MSDOS__
     shell_function_completed = 0;
 
     /* Close the write side of the pipe.  We test for -1, since
@@ -1940,7 +1640,6 @@ func_shell_base (char *o, char **argv, int trim_newlines)
        libraries barf when 'close' is called with -1.  */
     if (pipedes[1] >= 0)
       close (pipedes[1]);
-#endif
 
     /* Set up and read from the pipe.  */
 
@@ -1963,15 +1662,7 @@ func_shell_base (char *o, char **argv, int trim_newlines)
     buffer[i] = '\0';
 
     /* Close the read side of the pipe.  */
-#ifdef  __MSDOS__
-    if (fpipe)
-      {
-        int st = pclose (fpipe);
-        shell_completed (st, 0);
-      }
-#else
     (void) close (pipedes[0]);
-#endif
 
     /* Loop until child_handler or reap_children()  sets
        shell_function_completed to the status of our child shell.  */
@@ -2008,100 +1699,12 @@ func_shell_base (char *o, char **argv, int trim_newlines)
   return o;
 }
 
-#else   /* _AMIGA */
-
-/* Do the Amiga version of func_shell.  */
-
-char *
-func_shell_base (char *o, char **argv, int trim_newlines)
-{
-  /* Amiga can't fork nor spawn, but I can start a program with
-     redirection of my choice.  However, this means that we
-     don't have an opportunity to reopen stdout to trap it.  Thus,
-     we save our own stdout onto a new descriptor and dup a temp
-     file's descriptor onto our stdout temporarily.  After we
-     spawn the shell program, we dup our own stdout back to the
-     stdout descriptor.  The buffer reading is the same as above,
-     except that we're now reading from a file.  */
-
-#include <dos/dos.h>
-#include <proto/dos.h>
-
-  BPTR child_stdout;
-  char tmp_output[FILENAME_MAX];
-  size_t maxlen = 200, i;
-  int cc;
-  char * buffer, * ptr;
-  char ** aptr;
-  size_t len = 0;
-  char* batch_filename = NULL;
-
-  /* Construct the argument list.  */
-  command_argv = construct_command_argv (argv[0], NULL, NULL, 0,
-                                         &batch_filename);
-  if (command_argv == 0)
-    return o;
-
-  /* Note the mktemp() is a security hole, but this only runs on Amiga.
-     Ideally we would use get_tmpfile(), but this uses a special Open(), not
-     fopen(), and I'm not familiar enough with the code to mess with it.  */
-  strcpy (tmp_output, "t:MakeshXXXXXXXX");
-  mktemp (tmp_output);
-  child_stdout = Open (tmp_output, MODE_NEWFILE);
-
-  for (aptr=command_argv; *aptr; aptr++)
-    len += strlen (*aptr) + 1;
-
-  buffer = xmalloc (len + 1);
-  ptr = buffer;
-
-  for (aptr=command_argv; *aptr; aptr++)
-    {
-      strcpy (ptr, *aptr);
-      ptr += strlen (ptr) + 1;
-      *(ptr++) = ' ';
-      *ptr = '\0';
-    }
-
-  ptr[-1] = '\n';
-
-  Execute (buffer, NULL, child_stdout);
-  free (buffer);
-
-  Close (child_stdout);
-
-  child_stdout = Open (tmp_output, MODE_OLDFILE);
-
-  buffer = xmalloc (maxlen);
-  i = 0;
-  do
-    {
-      if (i == maxlen)
-        {
-          maxlen += 512;
-          buffer = xrealloc (buffer, maxlen + 1);
-        }
-
-      cc = Read (child_stdout, &buffer[i], maxlen - i);
-      if (cc > 0)
-        i += cc;
-    } while (cc > 0);
-
-  Close (child_stdout);
-
-  fold_newlines (buffer, &i, trim_newlines);
-  o = variable_buffer_output (o, buffer, i);
-  free (buffer);
-  return o;
-}
-#endif  /* _AMIGA */
 
 static char *
 func_shell (char *o, char **argv, const char *funcname UNUSED)
 {
   return func_shell_base (o, argv, 1);
 }
-#endif  /* !VMS */
 
 #ifdef EXPERIMENTAL
 

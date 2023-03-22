@@ -2,8 +2,9 @@
                    made saner by hand for Celeste                */
 /* src/config.h.in.  Generated from configure.ac by autoheader.  */
 
-#define LIBDIR "/usr/lib"
-#define LOCALEDIR "/usr/share/locale"
+#pragma once
+
+#include "version.h"
 
 /* Define if building universal (internal helper macro) */
 /* #undef AC_APPLE_UNIVERSAL_BUILD */
@@ -402,7 +403,7 @@
 #define HAVE_WORKING_VFORK 1
 
 /* Default C++ compiler. */
-#define MAKE_CXX "g++"
+#define MAKE_CXX "c++"
 
 /* Build host information. */
 #define MAKE_HOST "x86_64-pc-linux-gnu"
@@ -421,27 +422,6 @@
 
 /* Define to 1 if the nlist n_name member is a pointer */
 /* #undef N_NAME_POINTER */
-
-/* Name of package */
-#define PACKAGE "make"
-
-/* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "bug-make@gnu.org"
-
-/* Define to the full name of this package. */
-#define PACKAGE_NAME "GNU Make"
-
-/* Define to the full name and version of this package. */
-#define PACKAGE_STRING "GNU Make 4.4.1"
-
-/* Define to the one symbol short name of this package. */
-#define PACKAGE_TARNAME "make"
-
-/* Define to the home page for this package. */
-#define PACKAGE_URL "https://www.gnu.org/software/make/"
-
-/* Define to the version of this package. */
-#define PACKAGE_VERSION "4.4.1"
 
 /* Define to the character that separates directories in PATH. */
 #define PATH_SEPARATOR_CHAR ':'
@@ -574,10 +554,6 @@
 #ifndef _XOPEN_SOURCE
 /* # undef _XOPEN_SOURCE */
 #endif
-
-
-/* Version number of package */
-#define VERSION "4.4.1"
 
 /* Build for the WINDOWS32 API. */
 /* #undef WINDOWS32 */
@@ -1152,16 +1128,6 @@
 /* Define to the widest signed integer type if <stdint.h> and <inttypes.h> do
    not define. */
 /* #undef intmax_t */
-
-/* Work around a bug in Apple GCC 4.0.1 build 5465: In C99 mode, it supports
-   the ISO C 99 semantics of 'extern inline' (unlike the GNU C semantics of
-   earlier versions), but does not display it by setting __GNUC_STDC_INLINE__.
-   __APPLE__ && __MACH__ test for Mac OS X.
-   __APPLE_CC__ tests for the Apple compiler and its version.
-   __STDC_VERSION__ tests for the C99 mode.  */
-#if defined __APPLE__ && defined __MACH__ && __APPLE_CC__ >= 5465 && !defined __cplusplus && __STDC_VERSION__ >= 199901L && !defined __GNUC_STDC_INLINE__
-# define __GNUC_STDC_INLINE__ 1
-#endif
 
 /* _GL_CMP (n1, n2) performs a three-valued comparison on n1 vs. n2, where
    n1 and n2 are expressions without side effects, that evaluate to real

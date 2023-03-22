@@ -23,15 +23,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.  */
 #include <assert.h>
 #include <stdarg.h>
 
-#ifdef WINDOWS32
-# include <windows.h>
-# include <io.h>
-#endif
 
-#ifdef __EMX__
-# define INCL_DOS
-# include <os2.h>
-#endif
 
 #ifdef HAVE_FCNTL_H
 # include <fcntl.h>
@@ -90,7 +82,7 @@ make_seed (unsigned int seed)
 }
 
 unsigned int
-make_rand ()
+make_rand (void)
 {
   /* mk_state must never be 0.  */
   if (mk_state == 0)
@@ -248,7 +240,7 @@ concat (unsigned int num, ...)
 pid_t getpid ();
 #endif
 
-pid_t make_pid ()
+pid_t make_pid (void)
 {
   return getpid ();
 }
@@ -525,11 +517,7 @@ spin (const char* type)
     {
       fprintf (stderr, "SPIN on %s\n", filenm);
       do
-#ifdef WINDOWS32
-        Sleep (1000);
-#else
         sleep (1);
-#endif
       while (stat (filenm, &dummy) == 0);
     }
 }
@@ -556,13 +544,6 @@ dbg (const char *fmt, ...)
 
 /* Provide support for temporary files.  */
 
-#ifndef HAVE_STDLIB_H
-# ifdef HAVE_MKSTEMP
-int mkstemp (char *template);
-# else
-char *mktemp (char *template);
-# endif
-#endif
 
 #ifndef HAVE_UMASK
 mode_t
@@ -572,24 +553,16 @@ umask (mode_t mask)
 }
 #endif
 
-#ifdef VMS
-# define DEFAULT_TMPFILE    "sys$scratch:gnv$make_cmdXXXXXX.com"
-#else
 # define DEFAULT_TMPFILE    "GmXXXXXX"
-#endif
 
 const char *
-get_tmpdir ()
+get_tmpdir (void)
 {
   static const char *tmpdir = NULL;
 
   if (!tmpdir)
     {
-#if defined (__MSDOS__) || defined (WINDOWS32) || defined (__EMX__)
-# define TMP_EXTRAS   "TMP", "TEMP",
-#else
 # define TMP_EXTRAS
-#endif
       const char *tlist[] = { "MAKE_TMPDIR", "TMPDIR", TMP_EXTRAS NULL };
       const char **tp;
       unsigned int found = 0;
@@ -621,7 +594,7 @@ get_tmpdir ()
 }
 
 static char *
-get_tmptemplate ()
+get_tmptemplate (void)
 {
   const char *tmpdir = get_tmpdir ();
   char *template;
@@ -630,11 +603,9 @@ get_tmptemplate ()
   template = xmalloc (strlen (tmpdir) + CSTRLEN (DEFAULT_TMPFILE) + 2);
   cp = stpcpy (template, tmpdir);
 
-#if !defined VMS
   /* It's not possible for tmpdir to be empty.  */
   if (! ISDIRSEP (cp[-1]))
     *(cp++) = '/';
-#endif
 
   strcpy (cp, DEFAULT_TMPFILE);
 
@@ -786,38 +757,6 @@ get_tmpfile (char **name)
 }
 
 
-#if HAVE_TTYNAME && defined(__EMX__)
-/* OS/2 kLIBC has a declaration for ttyname(), so configure finds it.
-   But, it is not implemented!  Roll our own.  */
-char *ttyname (int fd)
-{
-  ULONG type;
-  ULONG attr;
-  ULONG rc;
-
-  rc = DosQueryHType (fd, &type, &attr);
-  if (rc)
-    {
-      errno = EBADF;
-      return NULL;
-    }
-
-  if (type == HANDTYPE_DEVICE)
-    {
-      if (attr & 3)     /* 1 = KBD$, 2 = SCREEN$ */
-        return (char *) "/dev/con";
-
-      if (attr & 4)     /* 4 = NUL */
-        return (char *) "/dev/nul";
-
-      if (attr & 8)     /* 8 = CLOCK$ */
-        return (char *) "/dev/clock$";
-    }
-
-  errno = ENOTTY;
-  return NULL;
-}
-#endif
 
 
 #if !HAVE_STRCASECMP && !HAVE_STRICMP && !HAVE_STRCMPI

@@ -58,9 +58,7 @@ USA.  */
 
 #ifndef ELIDE_CODE
 
-#if defined STDC_HEADERS || defined __GNU_LIBRARY__
 # include <stddef.h>
-#endif
 
 #if defined HAVE_UNISTD_H
 # include <unistd.h>
@@ -71,13 +69,8 @@ USA.  */
 # endif
 #endif
 
-#if !defined _AMIGA && !defined VMS && !defined WINDOWS32
 # include <pwd.h>
-#endif
 
-#if !defined __GNU_LIBRARY__ && !defined STDC_HEADERS
-extern int errno;
-#endif
 #ifndef __set_errno
 # define __set_errno(val) errno = (val)
 #endif
@@ -142,24 +135,11 @@ extern int errno;
 #  undef alloca
 #  define alloca(n)	__builtin_alloca (n)
 # else	/* Not GCC.  */
-#  ifdef HAVE_ALLOCA_H
 #   include <alloca.h>
-#  else	/* Not HAVE_ALLOCA_H.  */
-#   ifndef _AIX
-#    ifdef WINDOWS32
-#     include <malloc.h>
-#    else
-extern char *alloca ();
-#    endif /* WINDOWS32 */
-#   endif /* Not _AIX.  */
-#  endif /* sparc or HAVE_ALLOCA_H.  */
 # endif	/* GCC.  */
 #endif
 
 #ifndef __GNU_LIBRARY__
-# ifdef STAT_MACROS_BROKEN
-#  undef S_ISDIR
-# endif
 # ifndef S_ISDIR
 #  define S_ISDIR(mode) (((mode) & S_IFMT) == S_IFDIR)
 # endif
@@ -416,14 +396,6 @@ glob (const char *pattern, int flags,
 
   /* Find the filename.  */
   filename = strrchr (pattern, '/');
-#if defined __MSDOS__ || defined WINDOWS32
-  /* The case of "d:pattern".  Since `:' is not allowed in
-     file names, we can safely assume that wherever it
-     happens in pattern, it signals the filename part.  This
-     is so we could some day support patterns like "[a-z]:foo".  */
-  if (filename == NULL)
-    filename = strchr (pattern, ':');
-#endif /* __MSDOS__ || WINDOWS32 */
   if (filename == NULL)
     {
       /* This can mean two things: a simple name or "~name".  The later
@@ -441,11 +413,7 @@ glob (const char *pattern, int flags,
       else
 	{
 	  filename = pattern;
-#ifdef _AMIGA
-	  dirname = "";
-#else
 	  dirname = ".";
-#endif
 	  dirlen = 0;
 	}
     }
@@ -460,29 +428,6 @@ glob (const char *pattern, int flags,
     {
       char *newp;
       dirlen = filename - pattern;
-#if defined __MSDOS__ || defined WINDOWS32
-      if (*filename == ':'
-	  || (filename > pattern + 1 && filename[-1] == ':'))
-	{
-	  char *drive_spec;
-
-	  ++dirlen;
-	  drive_spec = (char *) __alloca (dirlen + 1);
-#ifdef HAVE_MEMPCPY
-	  *((char *) mempcpy (drive_spec, pattern, dirlen)) = '\0';
-#else
-	  memcpy (drive_spec, pattern, dirlen);
-	  drive_spec[dirlen] = '\0';
-#endif
-	  /* For now, disallow wildcards in the drive spec, to
-	     prevent infinite recursion in glob.  */
-	  if (__glob_pattern_p (drive_spec, !(flags & GLOB_NOESCAPE)))
-	    return GLOB_NOMATCH;
-	  /* If this is "d:pattern", we need to copy `:' to DIRNAME
-	     as well.  If it's "d:/pattern", don't remove the slash
-	     from "d:/", since "d:" and "d:/" are not the same.*/
-	}
-#endif
       newp = (char *) __alloca (dirlen + 1);
 #ifdef HAVE_MEMPCPY
       *((char *) mempcpy (newp, pattern, dirlen)) = '\0';
@@ -494,11 +439,6 @@ glob (const char *pattern, int flags,
       ++filename;
 
       if (filename[0] == '\0'
-#if defined __MSDOS__ || defined WINDOWS32
-          && dirname[dirlen - 1] != ':'
-	  && (dirlen < 3 || dirname[dirlen - 2] != ':'
-	      || dirname[dirlen - 1] != '/')
-#endif
 	  && dirlen > 1)
 	/* "pattern/".  Expand "pattern", appending slashes.  */
 	{
@@ -518,31 +458,12 @@ glob (const char *pattern, int flags,
 
   oldcount = pglob->gl_pathc;
 
-#ifndef VMS
   if ((flags & (GLOB_TILDE|GLOB_TILDE_CHECK)) && dirname[0] == '~')
     {
       if (dirname[1] == '\0' || dirname[1] == '/')
 	{
 	  /* Look up home directory.  */
-#ifdef VMS
-/* This isn't obvious, RTLs of DECC and VAXC know about "HOME" */
-          const char *home_dir = getenv ("SYS$LOGIN");
-#else
           const char *home_dir = getenv ("HOME");
-#endif
-# ifdef _AMIGA
-	  if (home_dir == NULL || home_dir[0] == '\0')
-	    home_dir = "SYS:";
-# else
-#  ifdef WINDOWS32
-	  if (home_dir == NULL || home_dir[0] == '\0')
-            home_dir = "c:/users/default"; /* poor default */
-#  else
-#   ifdef VMS
-/* Again, this isn't obvious, if "HOME" isn't known "SYS$LOGIN" should be set */
-	  if (home_dir == NULL || home_dir[0] == '\0')
-	    home_dir = "SYS$DISK:[]";
-#   else
 	  if (home_dir == NULL || home_dir[0] == '\0')
 	    {
 	      int success;
@@ -601,9 +522,6 @@ glob (const char *pattern, int flags,
 	      else
 		home_dir = "~"; /* No luck.  */
 	    }
-#   endif /* VMS */
-#  endif /* WINDOWS32 */
-# endif
 	  /* Now construct the full directory.  */
 	  if (dirname[1] == '\0')
 	    dirname = home_dir;
@@ -622,7 +540,6 @@ glob (const char *pattern, int flags,
 	      dirname = newp;
 	    }
 	}
-# if !defined _AMIGA && !defined WINDOWS32 && !defined VMS
       else
 	{
 	  char *end_name = strchr (dirname, '/');
@@ -702,9 +619,7 @@ glob (const char *pattern, int flags,
 		 home directory.  */
 	      return GLOB_NOMATCH;
 	}
-# endif	/* Not Amiga && not WINDOWS32 && not VMS.  */
     }
-#endif	/* Not VMS.  */
 
   /* Now test whether we looked for "~" or "~NAME".  In this case we
      can give the answer now.  */
@@ -1011,31 +926,12 @@ prefix_array (const char *dirname, char **array, size_t n)
 {
   size_t i;
   size_t dirlen = strlen (dirname);
-#if defined __MSDOS__ || defined WINDOWS32
-  char sep_char = '/';
-# define DIRSEP_CHAR sep_char
-#else
 # define DIRSEP_CHAR '/'
-#endif
 
   if (dirlen == 1 && dirname[0] == '/')
     /* DIRNAME is just "/", so normal prepending would get us "//foo".
        We want "/foo" instead, so don't prepend any chars from DIRNAME.  */
     dirlen = 0;
-#if defined __MSDOS__ || defined WINDOWS32
-  else if (dirlen > 1)
-    {
-      if (dirname[dirlen - 1] == '/' && dirname[dirlen - 2] == ':')
-	/* DIRNAME is "d:/".  Don't prepend the slash from DIRNAME.  */
-	--dirlen;
-      else if (dirname[dirlen - 1] == ':')
-	{
-	  /* DIRNAME is "d:".  Use `:' instead of `/'.  */
-	  --dirlen;
-	  sep_char = ':';
-	}
-    }
-#endif
 
   for (i = 0; i < n; ++i)
     {
@@ -1124,10 +1020,6 @@ glob_in_dir (const char *pattern, const char *directory, int flags,
   int meta;
   int save;
 
-#ifdef VMS
-  if (*directory == 0)
-    directory = "[]";
-#endif
   meta = __glob_pattern_p (pattern, !(flags & GLOB_NOESCAPE));
   if (meta == 0)
     {

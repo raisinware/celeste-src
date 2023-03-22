@@ -61,8 +61,6 @@ static const char * const suffixes[] =
        the kernel interpret the program file.  */
     #elif defined __CYGWIN__
     "", ".exe", ".com"
-    #elif defined __EMX__
-    "", ".exe"
     #elif defined __DJGPP__
     "", ".com", ".exe", ".bat"
     #else /* Unix */

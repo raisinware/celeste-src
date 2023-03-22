@@ -73,38 +73,12 @@ lookup_file (const char *name)
 {
   struct file *f;
   struct file file_key;
-#ifdef VMS
-  int want_vmsify;
-#ifndef WANT_CASE_SENSITIVE_TARGETS
-  char *lname;
-#endif
-#endif
 
   assert (*name != '\0');
 
   /* This is also done in parse_file_seq, so this is redundant
      for names read from makefiles.  It is here for names passed
      on the command line.  */
-#ifdef VMS
-   want_vmsify = (strpbrk (name, "]>:^") != NULL);
-# ifndef WANT_CASE_SENSITIVE_TARGETS
-  if (*name != '.')
-    {
-      const char *n;
-      char *ln;
-      lname = xstrdup (name);
-      for (n = name, ln = lname; *n != '\0'; ++n, ++ln)
-        *ln = isupper ((unsigned char)*n) ? tolower ((unsigned char)*n) : *n;
-      *ln = '\0';
-      name = lname;
-    }
-# endif
-
-  while (name[0] == '[' && name[1] == ']' && name[2] != '\0')
-      name += 2;
-  while (name[0] == '<' && name[1] == '>' && name[2] != '\0')
-      name += 2;
-#endif
   while (name[0] == '.' && ISDIRSEP (name[1]) && name[2] != '\0')
     {
       name += 2;
@@ -116,23 +90,10 @@ lookup_file (const char *name)
   if (*name == '\0')
     {
       /* It was all slashes after a dot.  */
-#if defined(_AMIGA)
-      name = "";
-#else
       name = "./";
-#endif
-#if defined(VMS)
-      /* TODO - This section is probably not needed. */
-      if (want_vmsify)
-        name = "[]";
-#endif
     }
   file_key.hname = name;
   f = hash_find_item (&files, &file_key);
-#if defined(VMS) && !defined(WANT_CASE_SENSITIVE_TARGETS)
-  if (*name != '.')
-    free (lname);
-#endif
 
   return f;
 }
@@ -153,23 +114,6 @@ enter_file (const char *name)
   assert (*name != '\0');
   assert (! verify_flag || strcache_iscached (name));
 
-#if defined(VMS) && !defined(WANT_CASE_SENSITIVE_TARGETS)
-  if (*name != '.')
-    {
-      const char *n;
-      char *lname, *ln;
-      lname = xstrdup (name);
-      for (n = name, ln = lname; *n != '\0'; ++n, ++ln)
-        if (isupper ((unsigned char)*n))
-          *ln = tolower ((unsigned char)*n);
-        else
-          *ln = *n;
-
-      *ln = '\0';
-      name = strcache_add (lname);
-      free (lname);
-    }
-#endif
 
   file_key.hname = name;
   file_slot = (struct file **) hash_find_slot (&files, &file_key);
@@ -958,7 +902,6 @@ file_timestamp_now (int *resolution)
   /* Don't bother with high-resolution clocks if file timestamps have
      only one-second resolution.  The code below should work, but it's
      not worth the hassle of debugging it on hosts where it fails.  */
-#if FILE_TIMESTAMP_HI_RES
 # if HAVE_CLOCK_GETTIME && defined CLOCK_REALTIME
   {
     struct timespec timespec;
@@ -983,15 +926,12 @@ file_timestamp_now (int *resolution)
       }
   }
 # endif
-#endif
 
   r = 1000000000;
   s = time ((time_t *) 0);
   ns = 0;
 
-#if FILE_TIMESTAMP_HI_RES
  got_time:
-#endif
   *resolution = r;
   return file_timestamp_cons (0, s, ns);
 }

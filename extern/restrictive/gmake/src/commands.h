@@ -17,6 +17,10 @@ this program.  If not, see <https://www.gnu.org/licenses/>.  */
 /* Structure that gives the commands to make a file
    and information about where these commands came from.  */
 
+#pragma once
+
+#include "makeint.h"
+
 struct commands
   {
     floc fileinfo;              /* Where commands were defined.  */
