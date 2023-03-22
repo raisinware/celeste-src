@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION "3.20")
 project("Celeste Linux Core Userspace" VERSION "0.1")
 set(CMAKE_C_STANDARD "23")
 add_compile_options(-Wall -Wextra -Wpedantic)
+add_compile_options(-Werror=implicit-function-declaration -Werror=implicit-int)
 
 # includes
 include(CheckSymbolExists)
@@ -16,4 +17,5 @@ if(GLIBC_TARGET)
 endif()
 
 # start rest of build process
+add_subdirectory(contrib)
 add_subdirectory(usr)

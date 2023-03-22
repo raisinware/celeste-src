@@ -49,6 +49,10 @@ src/config.ami
 src/config.h-vms
 src/config.h.W32
 src/configh.dos
+src/getopt.c
+src/getopt1.c
+src/getopt.h
+src/gettext.h
 src/gmk-default.h
 src/gmk-default.scm
 src/remote-cstms.c
