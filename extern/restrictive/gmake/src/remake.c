@@ -1534,7 +1534,6 @@ name_mtime (const char *name)
   /* If we get here we either found it, or it doesn't exist.
      If it doesn't exist see if we can use a symlink mtime instead.  */
 
-#ifdef MAKE_SYMLINKS
 #ifndef S_ISLNK
 # define S_ISLNK(_m)     (((_m)&S_IFMT)==S_IFLNK)
 #endif
@@ -1598,7 +1597,6 @@ name_mtime (const char *name)
             strcpy (p+1, lbuf);
         }
     }
-#endif
 
   return mtime;
 }

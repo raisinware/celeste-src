@@ -7,6 +7,7 @@ set(GMAKE_LIBDIR "${CMAKE_SOURCE_DIR}/extern/restrictive/gmake/lib")
 set(GMAKE_SOURCES
     config.h
     gettext.h
+    gmakeglob_impl.c
     ${GMAKE_SRCDIR}/ar.c 
     ${GMAKE_SRCDIR}/arscan.c 
     ${GMAKE_SRCDIR}/commands.c 
@@ -15,7 +16,6 @@ set(GMAKE_SOURCES
     ${GMAKE_SRCDIR}/expand.c 
     ${GMAKE_SRCDIR}/file.c 
     ${GMAKE_SRCDIR}/function.c
-    ${GMAKE_SRCDIR}/guile.c 
     ${GMAKE_SRCDIR}/hash.c 
     ${GMAKE_SRCDIR}/implicit.c 
     ${GMAKE_SRCDIR}/job.c 
@@ -27,13 +27,11 @@ set(GMAKE_SOURCES
     ${GMAKE_SRCDIR}/posixos.c
     ${GMAKE_SRCDIR}/read.c 
     ${GMAKE_SRCDIR}/remake.c 
-    ${GMAKE_SRCDIR}/remote-stub.c 
     ${GMAKE_SRCDIR}/rule.c 
     ${GMAKE_SRCDIR}/shuffle.c 
     ${GMAKE_SRCDIR}/signame.c 
     ${GMAKE_SRCDIR}/strcache.c 
     ${GMAKE_SRCDIR}/variable.c 
-    ${GMAKE_SRCDIR}/version.c 
     ${GMAKE_SRCDIR}/vpath.c
     ${GMAKE_LIBDIR}/findprog-in.c
     ${GMAKE_LIBDIR}/concat-filename.c

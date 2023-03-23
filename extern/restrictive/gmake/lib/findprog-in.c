@@ -16,7 +16,7 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
-#include <config.h>
+#include "../../../../contrib/bin/gmake/config.h"
 
 /* Specification.  */
 #include "findprog.h"
@@ -30,42 +30,14 @@
 #include "filename.h"
 #include "concat-filename.h"
 
-#if (defined _WIN32 && !defined __CYGWIN__) || defined __EMX__ || defined __DJGPP__
-  /* Native Windows, OS/2, DOS */
-# define NATIVE_SLASH '\\'
-#else
-  /* Unix */
 # define NATIVE_SLASH '/'
-#endif
-
-/* Separator in PATH like lists of pathnames.  */
-#if (defined _WIN32 && !defined __CYGWIN__) || defined __EMX__ || defined __DJGPP__
-  /* Native Windows, OS/2, DOS */
-# define PATH_SEPARATOR ';'
-#else
-  /* Unix */
 # define PATH_SEPARATOR ':'
-#endif
 
 /* The list of suffixes that the execlp/execvp function tries when searching
    for the program.  */
 static const char * const suffixes[] =
   {
-    #if defined _WIN32 && !defined __CYGWIN__ /* Native Windows */
-    "", ".com", ".exe", ".bat", ".cmd"
-    /* Note: Files without any suffix are not considered executable.  */
-    /* Note: The cmd.exe program does a different lookup: It searches according
-       to the PATHEXT environment variable.
-       See <https://stackoverflow.com/questions/7839150/>.
-       Also, it executes files ending in .bat and .cmd directly without letting
-       the kernel interpret the program file.  */
-    #elif defined __CYGWIN__
-    "", ".exe", ".com"
-    #elif defined __DJGPP__
-    "", ".com", ".exe", ".bat"
-    #else /* Unix */
     ""
-    #endif
   };
 
 const char *
@@ -104,20 +76,6 @@ find_in_given_path (const char *progname, const char *path,
                ? directory
                : "");
 
-            #if defined _WIN32 && !defined __CYGWIN__ /* Native Windows */
-            const char *progbasename;
-
-            {
-              const char *p;
-
-              progbasename = progname;
-              for (p = progname; *p != '\0'; p++)
-                if (ISSLASH (*p))
-                  progbasename = p + 1;
-            }
-
-            bool progbasename_has_dot = (strchr (progbasename, '.') != NULL);
-            #endif
 
             /* Try all platform-dependent suffixes.  */
             failure_errno = ENOENT;
@@ -125,11 +83,6 @@ find_in_given_path (const char *progname, const char *path,
               {
                 const char *suffix = suffixes[i];
 
-                #if defined _WIN32 && !defined __CYGWIN__ /* Native Windows */
-                /* File names without a '.' are not considered executable, and
-                   for file names with a '.' no additional suffix is tried.  */
-                if ((*suffix != '\0') != progbasename_has_dot)
-                #endif
                   {
                     /* Concatenate directory_as_prefix, progname, suffix.  */
                     char *progpathname =
@@ -173,36 +126,6 @@ find_in_given_path (const char *progname, const char *path,
                     free (progpathname);
                   }
               }
-            #if defined _WIN32 && !defined __CYGWIN__ /* Native Windows */
-            if (failure_errno == ENOENT && !progbasename_has_dot)
-              {
-                /* In the loop above, we skipped suffix = "".  Do this loop
-                   round now, merely to provide a better errno than ENOENT.  */
-
-                char *progpathname =
-                  concatenated_filename (directory_as_prefix, progname, "");
-
-                if (progpathname == NULL)
-                  return NULL; /* errno is set here */
-
-                if (eaccess (progpathname, X_OK) == 0)
-                  {
-                    struct stat statbuf;
-
-                    if (stat (progpathname, &statbuf) >= 0)
-                      {
-                        if (! S_ISDIR (statbuf.st_mode))
-                          errno = ENOEXEC;
-                        else
-                          errno = EACCES;
-                      }
-                  }
-
-                failure_errno = errno;
-
-                free (progpathname);
-              }
-            #endif
 
             errno = failure_errno;
             return NULL;
@@ -225,9 +148,6 @@ find_in_given_path (const char *progname, const char *path,
     char *path_rest;
     char *cp;
 
-    #if defined _WIN32 && !defined __CYGWIN__ /* Native Windows */
-    bool progname_has_dot = (strchr (progname, '.') != NULL);
-    #endif
 
     failure_errno = ENOENT;
     for (path_rest = path_copy; ; path_rest = cp + 1)
@@ -273,11 +193,6 @@ find_in_given_path (const char *progname, const char *path,
           {
             const char *suffix = suffixes[i];
 
-            #if defined _WIN32 && !defined __CYGWIN__ /* Native Windows */
-            /* File names without a '.' are not considered executable, and
-               for file names with a '.' no additional suffix is tried.  */
-            if ((*suffix != '\0') != progname_has_dot)
-            #endif
               {
                 /* Concatenate dir_as_prefix, progname, and suffix.  */
                 char *progpathname =
@@ -344,41 +259,6 @@ find_in_given_path (const char *progname, const char *path,
                 free (progpathname);
               }
           }
-        #if defined _WIN32 && !defined __CYGWIN__ /* Native Windows */
-        if (failure_errno == ENOENT && !progname_has_dot)
-          {
-            /* In the loop above, we skipped suffix = "".  Do this loop
-               round now, merely to provide a better errno than ENOENT.  */
-
-            char *progpathname =
-              concatenated_filename (dir_as_prefix, progname, "");
-
-            if (progpathname == NULL)
-              {
-                /* errno is set here.  */
-                failure_errno = errno;
-                free (dir_as_prefix_to_free);
-                goto failed;
-              }
-
-            if (eaccess (progpathname, X_OK) == 0)
-              {
-                struct stat statbuf;
-
-                if (stat (progpathname, &statbuf) >= 0)
-                  {
-                    if (! S_ISDIR (statbuf.st_mode))
-                      errno = ENOEXEC;
-                    else
-                      errno = EACCES;
-                  }
-              }
-
-            failure_errno = errno;
-
-            free (progpathname);
-          }
-        #endif
 
         free (dir_as_prefix_to_free);
 

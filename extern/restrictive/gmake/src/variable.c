@@ -776,14 +776,9 @@ define_automatic_variables (void)
   sprintf (buf, "%u", makelevel);
   define_variable_cname (MAKELEVEL_NAME, buf, o_env, 0);
 
-  sprintf (buf, "%s%s%s",
-           version_string,
-           (remote_description == 0 || remote_description[0] == '\0')
-           ? "" : "-",
-           (remote_description == 0 || remote_description[0] == '\0')
-           ? "" : remote_description);
+  sprintf (buf, "%s", VERSION);
   define_variable_cname ("MAKE_VERSION", buf, o_default, 0);
-  define_variable_cname ("MAKE_HOST", make_host, o_default, 0);
+  define_variable_cname ("MAKE_HOST", MAKE_HOST, o_default, 0);
 
 
   /* This won't override any definition, but it will provide one if there
@@ -1161,6 +1156,7 @@ do_variable_definition (const floc *flocp, const char *varname,
       conditional = 1;
       flavor = f_recursive;
       /* FALLTHROUGH */
+      __attribute__((fallthrough));
     case f_recursive:
       /* A recursive variable definition "var = value".
          The value is used verbatim.  */

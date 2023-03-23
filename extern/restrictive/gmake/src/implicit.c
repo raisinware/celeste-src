@@ -284,17 +284,6 @@ pattern_search (struct file *file, int archive,
          but not counting any slash at the end.  (foo/bar/ counts as
          bar/ in directory foo/, not empty in directory foo/bar/.)  */
       lastslash = memrchr (filename, '/', namelen - 1);
-#ifdef HAVE_DOS_PATHS
-      /* Handle backslashes (possibly mixed with forward slashes)
-         and the case of "d:file".  */
-      {
-        char *bslash = memrchr (filename, '\\', namelen - 1);
-        if (lastslash == 0 || bslash > lastslash)
-          lastslash = bslash;
-        if (lastslash == 0 && filename[0] && filename[1] == ':')
-          lastslash = filename + 1;
-      }
-#endif
     }
 
   pathlen = lastslash ? lastslash - filename + 1 : 0;
@@ -350,14 +339,6 @@ pattern_search (struct file *file, int archive,
           if (lastslash)
             {
               check_lastslash = strchr (target, '/') == 0;
-#ifdef HAVE_DOS_PATHS
-              /* Didn't find it yet: check for DOS-type directories.  */
-              if (check_lastslash)
-                {
-                  char *b = strchr (target, '\\');
-                  check_lastslash = !(b || (target[0] && target[1] == ':'));
-                }
-#endif
             }
           if (check_lastslash)
             {

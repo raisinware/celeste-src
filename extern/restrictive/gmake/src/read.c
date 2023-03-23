@@ -1067,18 +1067,6 @@ eval (struct ebuffer *ebuf, int set_default)
 
             colonp = find_char_unquote (p2, ':');
 
-#ifdef HAVE_DOS_PATHS
-            if (colonp > p2)
-              /* The drive spec brain-damage strikes again...
-                 Note that the only separators of targets in this context are
-                 whitespace and a left paren.  If others are possible, add them
-                 to the string in the call to strchr.  */
-              while (colonp && ISDIRSEP (colonp[1]) &&
-                     isalpha ((unsigned char) colonp[-1]) &&
-                     (colonp == p2 + 1 || strchr (" \t(", colonp[-2]) != 0))
-                colonp = find_char_unquote (colonp + 1, ':');
-#endif
-
             if (colonp)
               {
                 /* If the previous character is '&', back up before '&:' */
@@ -1231,20 +1219,6 @@ eval (struct ebuffer *ebuf, int set_default)
             else
               break;
           }
-#ifdef HAVE_DOS_PATHS
-        {
-          int check_again;
-          do {
-            check_again = 0;
-            /* For DOS-style paths, skip a "C:\..." or a "C:/..." */
-            if (p != 0 && ISDIRSEP (p[1]) && isalpha ((unsigned char)p[-1]) &&
-                (p == p2 + 1 || strchr (" \t:(", p[-2]) != 0)) {
-              p = strchr (p + 1, ':');
-              check_again = 1;
-            }
-          } while (check_again);
-        }
-#endif
         if (p != 0)
           {
             struct nameseq *target;
@@ -1892,11 +1866,7 @@ check_specials (struct nameseq *files, int set_default)
 
           /* See if this target's name does not start with a '.',
              unless it contains a slash.  */
-          if (*nm == '.' && strchr (nm, '/') == 0
-#ifdef HAVE_DOS_PATHS
-              && strchr (nm, '\\') == 0
-#endif
-              )
+          if (*nm == '.' && strchr (nm, '/') == 0)
             continue;
 
           /* If this file is a suffix, it can't be the default goal file.  */
@@ -2823,14 +2793,6 @@ get_next_mword (char *buffer, char **startp, size_t *length)
           goto done_word;
 
         case ':':
-#ifdef HAVE_DOS_PATHS
-          /* A word CAN include a colon in its drive spec.  The drive
-             spec is allowed either at the beginning of a word, or as part
-             of the archive member name, like in "libfoo.a(d:/foo/bar.o)".  */
-          if ((p - beg == 2 || (p - beg > 2 && p[-3] == '('))
-              && isalpha ((unsigned char)p[-2]))
-            break;
-#endif
           goto done_word;
 
         case '$':
@@ -3126,7 +3088,7 @@ parse_file_seq (char **stringp, size_t size, int stopmap,
                     } while(0)
 
   char *p;
-  glob_t gl;
+  gmake_glob_t gl;
   char *tp;
   int findmap = stopmap|MAP_VMSCOMMA|MAP_NUL;
   int found_wait = 0;
@@ -3181,14 +3143,6 @@ parse_file_seq (char **stringp, size_t size, int stopmap,
       s = p;
       p = find_map_unquote (p, findmap);
 
-#ifdef HAVE_DOS_PATHS
-      /* If we stopped due to a drive specifier, skip it.
-         Tokens separated by spaces are treated as separate paths since make
-         doesn't allow path names with spaces.  */
-      if (p && p == s+1 && p[0] == ':'
-          && isalpha ((unsigned char)s[0]) && ISDIRSEP (p[1]))
-        p = find_map_unquote (p+1, findmap);
-#endif
 
       if (!p)
         p = s + strlen (s);
@@ -3350,10 +3304,11 @@ parse_file_seq (char **stringp, size_t size, int stopmap,
           nlist = &name;
         }
       else
-        switch (glob (name, GLOB_ALTDIRFUNC, NULL, &gl))
+        switch (gmake_glob (name, 0, NULL, &gl))
           {
-          case GLOB_NOSPACE:
+          case GMAKE_GLOB_NOSPACE:
             out_of_memory ();
+            __attribute__((fallthrough)); // not a fallthrough bu
 
           case 0:
             /* Success.  */
@@ -3361,7 +3316,7 @@ parse_file_seq (char **stringp, size_t size, int stopmap,
             nlist = (const char **)gl.gl_pathv;
             break;
 
-          case GLOB_NOMATCH:
+          case GMAKE_GLOB_NOMATCH:
             /* If we want only existing items, skip this one.  */
             if (ANY_SET (flags, PARSEFS_EXISTS))
               {
@@ -3369,6 +3324,7 @@ parse_file_seq (char **stringp, size_t size, int stopmap,
                 break;
               }
             /* FALLTHROUGH */
+            __attribute__((fallthrough));
 
           default:
             /* By default keep this name.  */
@@ -3416,7 +3372,7 @@ parse_file_seq (char **stringp, size_t size, int stopmap,
           NEWELT (concat (2, prefix, nlist[i]));
 
       if (globme)
-        globfree (&gl);
+        gmake_globfree (&gl);
 
 #ifndef NO_ARCHIVES
       free (arname);

@@ -85,9 +85,6 @@ extern int errno;
 #if __gnu_hurd__
 # define MK_OS_HURD 1
 #endif
-#if __CYGWIN__
-# define MK_OS_CYGWIN 1
-#endif
 #if defined(__MVS__)
 # define MK_OS_ZOS 1
 #endif
@@ -113,9 +110,6 @@ extern int errno;
 # undef POSIX
 #endif
 
-#if !defined (POSIX) && defined (_AIX) && defined (_POSIX_SOURCE)
-# define POSIX 1
-#endif
 
 #ifndef sigmask
 # define sigmask(sig)   (1 << ((sig) - 1))
@@ -266,10 +260,8 @@ extern mode_t umask (mode_t);
    host does not conform to POSIX.  */
 #define ISDIGIT(c) ((unsigned) (c) - '0' <= 9)
 
-/* Test if two strings are equal. Is this worthwhile?  Should be profiled.  */
-#define streq(a, b) \
-   ((a) == (b) || \
-    (*(a) == *(b) && (*(a) == '\0' || !strcmp ((a) + 1, (b) + 1))))
+/* Test if two strings are equal. */
+#define streq(a, b) (strcmp(a, b) == 0)
 
 /* Test if two strings are equal, but match case-insensitively on systems
    which have case-insensitive filesystems.  Should only be used for
@@ -340,11 +332,7 @@ extern mode_t umask (mode_t);
    To overcome an issue parsing paths in a DOS/Windows environment when
    built in a unix based environment, override the PATH_SEPARATOR_CHAR
    definition unless being built for Cygwin. */
-#if defined(HAVE_DOS_PATHS) && !defined(__CYGWIN__)
-# undef PATH_SEPARATOR_CHAR
-# define PATH_SEPARATOR_CHAR ';'
-# define MAP_PATHSEP    MAP_SEMI
-#elif !defined(PATH_SEPARATOR_CHAR)
+#if   !defined(PATH_SEPARATOR_CHAR)
 #  define PATH_SEPARATOR_CHAR ':'
 #  define MAP_PATHSEP    MAP_COLON
 #elif PATH_SEPARATOR_CHAR == ':'
@@ -373,13 +361,7 @@ extern mode_t umask (mode_t);
 #define ISDIRSEP(c)     STOP_SET((c),MAP_DIRSEP)
 
 /* True if S starts with a drive specifier.  */
-#if defined(HAVE_DOS_PATHS)
-# define HAS_DRIVESPEC(_s) ((((_s)[0] >= 'a' && (_s)[0] <= 'z')          \
-                             || ((_s)[0] >= 'A' && (_s)[0] <= 'Z'))      \
-                            && (_s)[1] == ':')
-#else
 # define HAS_DRIVESPEC(_s) 0
-#endif
 
 /* We can't run setrlimit when using posix_spawn.  */
 #if defined(HAVE_SYS_RESOURCE_H) && defined(HAVE_GETRLIMIT) && defined(HAVE_SETRLIMIT) && !defined(USE_POSIX_SPAWN)
@@ -390,7 +372,7 @@ extern mode_t umask (mode_t);
 extern struct rlimit stack_limit;
 #endif
 
-#include <glob.h>
+#include "../../../../contrib/bin/gmake/gmakeglob.h"
 
 #define NILF ((floc *)0)
 
@@ -457,7 +439,21 @@ void out_of_memory (void) NORETURN;
 #define ONS(_t,_a,_f,_n,_s)   _t((_a), INTSTR_LENGTH + strlen (_s), \
                                  (_f), (_n), (_s))
 
-enum variable_origin;
+
+/* Codes in a variable definition saying where the definition came from.
+   Increasing numeric values signify less-overridable definitions.  */
+enum variable_origin
+  {
+    o_default,          /* Variable from the default set.  */
+    o_env,              /* Variable from environment.  */
+    o_file,             /* Variable given in a makefile.  */
+    o_env_override,     /* Variable from environment, if -e.  */
+    o_command,          /* Variable given by user.  */
+    o_override,         /* Variable from an 'override' directive.  */
+    o_automatic,        /* Automatic variable -- cannot be set.  */
+    o_invalid           /* Core dump time.  */
+  };
+
 struct variable;
 
 void reset_makeflags (enum variable_origin origin);
@@ -522,7 +518,7 @@ int file_impossible_p (const char *);
 void file_impossible (const char *);
 const char *dir_name (const char *);
 void print_dir_data_base (void);
-void dir_setup_glob (glob_t *);
+void dir_setup_glob (gmake_glob_t *);
 void hash_init_directories (void);
 
 void define_default_variables (void);
@@ -550,9 +546,6 @@ int strcache_iscached (const char *str);
 const char *strcache_add (const char *str);
 const char *strcache_add_len (const char *str, size_t len);
 
-/* Guile support  */
-int guile_gmake_setup (const floc *flocp);
-
 /* Loadable object support.  Sets to the strcached name of the loaded file.  */
 typedef int (*load_func_t)(const floc *flocp);
 int load_file (const floc *flocp, struct file *file, int noerror);
@@ -573,20 +566,6 @@ void dbg (const char *fmt, ...);
 /* We omit these declarations on non-POSIX systems which define _POSIX_VERSION,
    because such systems often declare them in header files anyway.  */
 
-#if !defined (__GNU_LIBRARY__) && !defined (POSIX) && !defined (_POSIX_VERSION) && !defined(WINDOWS32)
-
-long int lseek ();
-
-# ifdef  HAVE_GETCWD
-#  if !defined(VMS) && !defined(__DECC)
-char *getcwd (void);
-#  endif
-# else
-char *getwd (void);
-#  define getcwd(buf, len)       getwd (buf)
-# endif
-
-#endif  /* Not GNU C library or POSIX.  */
 
 #if !HAVE_STRCASECMP
 # if HAVE_STRICMP
@@ -657,21 +636,11 @@ extern double max_load_average;
 
 extern const char *program;
 
-
-void remote_setup (void);
-void remote_cleanup (void);
-int start_remote_job_p (int);
-int start_remote_job (char **, char **, int, int *, pid_t *, int *);
-int remote_status (int *, int *, int *, int);
-void block_remote_children (void);
-void unblock_remote_children (void);
-int remote_kill (pid_t id, int sig);
 void print_variable_data_base (void);
 void print_vpath_data_base (void);
 
 extern char *starting_directory;
 extern unsigned int makelevel;
-extern char *version_string, *remote_description, *make_host;
 
 extern unsigned int commands_started;
 

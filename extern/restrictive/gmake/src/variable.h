@@ -21,20 +21,6 @@ this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 struct file;
 
-/* Codes in a variable definition saying where the definition came from.
-   Increasing numeric values signify less-overridable definitions.  */
-enum variable_origin
-  {
-    o_default,          /* Variable from the default set.  */
-    o_env,              /* Variable from environment.  */
-    o_file,             /* Variable given in a makefile.  */
-    o_env_override,     /* Variable from environment, if -e.  */
-    o_command,          /* Variable given by user.  */
-    o_override,         /* Variable from an 'override' directive.  */
-    o_automatic,        /* Automatic variable -- cannot be set.  */
-    o_invalid           /* Core dump time.  */
-  };
-
 enum variable_flavor
   {
     f_bogus,            /* Bogus (error) */

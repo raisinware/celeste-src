@@ -76,7 +76,7 @@
    We also #define LDAV_PRIVILEGED if a program will require
    special installation to be able to call getloadavg.  */
 
-#include <config.h>
+#include "../../../../contrib/bin/gmake/config.h"
 
 /* Specification.  */
 #include <stdlib.h>
@@ -92,20 +92,7 @@
 
 # include "intprops.h"
 
-# if defined _WIN32 && ! defined __CYGWIN__ && ! defined WINDOWS32
-#  define WINDOWS32
-# endif
 
-# ifdef NeXT
-/* NeXT in the 2.{0,1,2} releases defines BSD in <sys/param.h>, which
-   conflicts with the definition understood in this file, that this
-   really is BSD. */
-#  undef BSD
-
-/* NeXT defines FSCALE in <sys/param.h>.  However, we take FSCALE being
-   defined to mean that the nlist method should be used, which is not true.  */
-#  undef FSCALE
-# endif
 
 /* Same issues as for NeXT apply to the HURD-based GNU system.  */
 # ifdef __GNU__
@@ -170,9 +157,6 @@
 #   define LOAD_AVE_TYPE long
 #  endif
 
-#  ifdef sgi
-#   define LOAD_AVE_TYPE long
-#  endif
 
 #  ifdef SVR4
 #   define LOAD_AVE_TYPE long
@@ -208,12 +192,6 @@
 #   define FSCALE 256
 #  endif
 
-#  if defined (sgi)
-/* Sometimes both MIPS and sgi are defined, so FSCALE was just defined
-   above under #ifdef MIPS.  But we want the sgi value.  */
-#   undef FSCALE
-#   define FSCALE 1000.0
-#  endif
 
 #  if defined _AIX && !defined HAVE_LIBPERFSTAT
 #   define FSCALE 65536.0
@@ -320,17 +298,7 @@
 #  define host_self mach_host_self
 # endif
 
-# ifdef NeXT
-#  ifdef HAVE_MACH_MACH_H
-#   include <mach/mach.h>
-#  else
-#   include <mach.h>
-#  endif
-# endif /* NeXT */
 
-# ifdef sgi
-#  include <sys/sysmp.h>
-# endif /* sgi */
 
 # ifdef UMAX
 #  include <signal.h>
@@ -358,18 +326,11 @@
 #  include <sys/dg_sys_info.h>
 # endif
 
-# if (defined __linux__ || defined __ANDROID__ \
-      || defined __CYGWIN__ || defined SUNOS_5 \
-      || (defined LOAD_AVE_TYPE && ! defined __VMS))
+
 #  include <fcntl.h>
-# endif
-
+
 /* Avoid static vars inside a function since in HPUX they dump as pure.  */
 
-# ifdef NeXT
-static processor_set_t default_set;
-static bool getloadavg_initialized;
-# endif /* NeXT */
 
 # ifdef UMAX
 static unsigned int cpus = 0;
@@ -388,7 +349,7 @@ static bool getloadavg_initialized;
 /* Offset in kmem to seek to read load average, or 0 means invalid.  */
 static long offset;
 
-#  if ! defined __VMS && ! defined sgi && ! (defined __linux__ || defined __ANDROID__)
+#  if !defined __VMS && !defined sgi && !(defined __linux__ || defined __ANDROID__)
 static struct nlist name_list[2];
 #  endif
 
@@ -498,7 +459,7 @@ getloadavg (double loadavg[], int nelem)
   }
 # endif
 
-# if !defined (LDAV_DONE) && (defined __linux__ || defined __ANDROID__ || defined __CYGWIN__)
+# if !defined (LDAV_DONE) && (defined __linux__ || defined __ANDROID__)
                                       /* Linux without glibc, Android, Cygwin */
 #  define LDAV_DONE
 #  undef LOAD_AVE_TYPE
@@ -595,43 +556,6 @@ getloadavg (double loadavg[], int nelem)
 
 # endif /* __NetBSD__ */
 
-# if !defined (LDAV_DONE) && defined (NeXT)                /* NeXTStep */
-#  define LDAV_DONE
-  /* The NeXT code was adapted from iscreen 3.2.  */
-
-  host_t host;
-  struct processor_set_basic_info info;
-  unsigned int info_count;
-
-  /* We only know how to get the 1-minute average for this system,
-     so even if the caller asks for more than 1, we only return 1.  */
-
-  if (!getloadavg_initialized)
-    {
-      if (processor_set_default (host_self (), &default_set) == KERN_SUCCESS)
-        getloadavg_initialized = true;
-    }
-
-  if (getloadavg_initialized)
-    {
-      info_count = PROCESSOR_SET_BASIC_INFO_COUNT;
-      if (processor_set_info (default_set, PROCESSOR_SET_BASIC_INFO, &host,
-                              (processor_set_info_t) &info, &info_count)
-          != KERN_SUCCESS)
-        getloadavg_initialized = false;
-      else
-        {
-          if (nelem > 0)
-            loadavg[elem++] = (double) info.load_average / LOAD_SCALE;
-        }
-    }
-
-  if (!getloadavg_initialized)
-    {
-      errno = ENOTSUP;
-      return -1;
-    }
-# endif /* NeXT */
 
 # if !defined (LDAV_DONE) && defined (UMAX)
 #  define LDAV_DONE
@@ -824,7 +748,6 @@ getloadavg (double loadavg[], int nelem)
   /* Get the address of LDAV_SYMBOL.  */
   if (offset == 0)
     {
-#  ifndef sgi
 #   if ! defined NLIST_STRUCT || ! defined N_NAME_POINTER
       strcpy (name_list[0].n_name, LDAV_SYMBOL);
       strcpy (name_list[1].n_name, "");
@@ -854,11 +777,6 @@ getloadavg (double loadavg[], int nelem)
             offset = name_list[0].n_value;
           }
 #   endif /* !SUNOS_5 */
-#  else  /* sgi */
-      ptrdiff_t ldav_off = sysmp (MP_KERNADDR, MPKA_AVENRUN);
-      if (ldav_off != -1)
-        offset = (long int) ldav_off & 0x7fffffff;
-#  endif /* sgi */
     }
 
   /* Make sure we have /dev/kmem open.  */

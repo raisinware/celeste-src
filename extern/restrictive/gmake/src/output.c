@@ -513,7 +513,7 @@ pfatal_with_name (const char *name)
    means we don't want to use string translations or normal cleanup.  */
 
 void
-out_of_memory ()
+out_of_memory (void)
 {
   writebuf (FD_STDOUT, program, strlen (program));
   writebuf (FD_STDOUT, STRING_SIZE_TUPLE (": *** virtual memory exhausted\n"));

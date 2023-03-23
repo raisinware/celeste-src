@@ -28,15 +28,7 @@ typedef struct
 
 typedef char *(*gmk_func_ptr)(const char *nm, unsigned int argc, char **argv);
 
-#ifdef _WIN32
-# ifdef GMK_BUILDING_MAKE
-#  define GMK_EXPORT  __declspec(dllexport)
-# else
-#  define GMK_EXPORT  __declspec(dllimport)
-# endif
-#else
 # define GMK_EXPORT
-#endif
 
 /* Free memory returned by the gmk_expand() function.  */
 GMK_EXPORT void gmk_free (char *str);

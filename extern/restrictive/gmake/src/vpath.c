@@ -328,14 +328,6 @@ selective_vpath_search (struct vpath *path, const char *file,
      the name-within-directory and FLEN is its length.  */
 
   n = strrchr (file, '/');
-#ifdef HAVE_DOS_PATHS
-  /* We need the rightmost slash or backslash.  */
-  {
-    const char *bslash = strrchr (file, '\\');
-    if (!n || bslash > n)
-      n = bslash;
-  }
-#endif
   name_dplen = n != 0 ? n - file : 0;
   filename = name_dplen > 0 ? n + 1 : file;
   if (name_dplen > 0)
@@ -363,11 +355,6 @@ selective_vpath_search (struct vpath *path, const char *file,
           p = mempcpy (p, file, name_dplen);
         }
 
-#ifdef HAVE_DOS_PATHS
-      /* Cause the next if to treat backslash and slash alike.  */
-      if (p != name && p[-1] == '\\' )
-        p[-1] = '/';
-#endif
       /* Now add the name-within-directory at the end of NAME.  */
       if (p != name && p[-1] != '/')
         {
@@ -495,9 +482,6 @@ vpath_search (const char *file, FILE_TIMESTAMP *mtime_ptr,
      there is nothing we can do.  */
 
   if (file[0] == '/'
-#ifdef HAVE_DOS_PATHS
-      || file[0] == '\\' || file[1] == ':'
-#endif
       || (vpaths == 0 && general_vpath == 0))
     return 0;
 

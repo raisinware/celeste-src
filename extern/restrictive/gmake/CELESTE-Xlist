@@ -9,6 +9,8 @@ lib/alloca.c
 lib/alloca.in.h
 lib/fnmatch.c
 lib/fnmatch.in.h
+lib/glob.c
+lib/glob.in.h
 lib/Makefile.in
 m4/
 mk/
@@ -55,7 +57,11 @@ src/getopt.h
 src/gettext.h
 src/gmk-default.h
 src/gmk-default.scm
+src/guile.c
+src/mkconfig.h
 src/remote-cstms.c
+src/remote-stub.c
+src/version.c
 src/vmsdir.h
 src/vms_exit.c
 src/vms_export_symbol.c

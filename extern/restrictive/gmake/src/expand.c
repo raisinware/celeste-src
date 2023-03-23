@@ -75,7 +75,7 @@ variable_buffer_output (char *ptr, const char *string, size_t length)
    This is called from main() and it should never be null afterward.  */
 
 char *
-initialize_variable_output ()
+initialize_variable_output (void)
 {
   /* If we don't have a variable output buffer yet, get one.  */
 

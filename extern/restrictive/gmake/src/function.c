@@ -536,14 +536,6 @@ func_notdir_suffix (char *o, char **argv, const char *funcname)
             continue;
           o = variable_buffer_output (o, p, len - (p - p2));
         }
-#ifdef HAVE_DOS_PATHS
-      /* Handle the case of "d:foo/bar".  */
-      else if (is_notdir && p2[0] && p2[1] == ':')
-        {
-          p = p2 + 2;
-          o = variable_buffer_output (o, p, len - (p - p2));
-        }
-#endif
       else if (is_notdir)
         o = variable_buffer_output (o, p2, len);
 
@@ -585,18 +577,13 @@ func_basename_dir (char *o, char **argv, const char *funcname)
         o = variable_buffer_output (o, p2, ++p - p2);
       else if (p >= p2 && (*p == '.'))
         o = variable_buffer_output (o, p2, p - p2);
-#ifdef HAVE_DOS_PATHS
-      /* Handle the "d:foobar" case */
-      else if (p2[0] && p2[1] == ':' && is_dir)
-        o = variable_buffer_output (o, p2, 2);
-#endif
       else if (is_dir)
       o = variable_buffer_output (o, "./", 2);
       else
         /* The entire name is the basename.  */
         o = variable_buffer_output (o, p2, len);
 
-        o = variable_buffer_output (o, " ", 1);
+      o = variable_buffer_output (o, " ", 1);
 
       doneany = 1;
     }
@@ -1118,7 +1105,8 @@ func_error (char *o, char **argv, const char *funcname)
     {
     case 'e':
       OS (fatal, reading_file, "%s", argv[0]);
-
+      __attribute__((fallthrough)); // not actually a fall through but the macro
+                                    // confuses clangd
     case 'w':
       OS (error, reading_file, "%s", argv[0]);
       break;
@@ -1736,17 +1724,8 @@ func_not (char *o, char **argv, char *funcname UNUSED)
 #endif
 
 
-#ifdef HAVE_DOS_PATHS
-# ifdef __CYGWIN__
-#  define IS_ABSOLUTE(n) ((n[0] && n[1] == ':') || ISDIRSEP (n[0]))
-# else
-#  define IS_ABSOLUTE(n) (n[0] && n[1] == ':')
-# endif
-# define ROOT_LEN 3
-#else
 # define IS_ABSOLUTE(n) (n[0] == '/')
 # define ROOT_LEN 1
-#endif
 
 /* Return the absolute name of file NAME which does not contain any '.',
    '..' components nor any repeated path separators ('/').   */
@@ -1771,51 +1750,16 @@ abspath (const char *name, char *apath)
 
       strcpy (apath, starting_directory);
 
-#ifdef HAVE_DOS_PATHS
-      if (ISDIRSEP (name[0]))
-        {
-          if (ISDIRSEP (name[1]))
-            {
-              /* A UNC.  Don't prepend a drive letter.  */
-              apath[0] = name[0];
-              apath[1] = name[1];
-              root_len = 2;
-            }
-          /* We have /foo, an absolute file name except for the drive
-             letter.  Assume the missing drive letter is the current
-             drive, which we can get if we remove from starting_directory
-             everything past the root directory.  */
-          apath[root_len] = '\0';
-        }
-#endif
 
       dest = strchr (apath, '\0');
     }
   else
     {
-#if defined(__CYGWIN__) && defined(HAVE_DOS_PATHS)
-      if (ISDIRSEP (name[0]))
-        root_len = 1;
-#endif
       memcpy (apath, name, root_len);
       apath[root_len] = '\0';
       dest = apath + root_len;
       /* Get past the root, since we already copied it.  */
       name += root_len;
-#ifdef HAVE_DOS_PATHS
-      if (! ISDIRSEP (apath[root_len - 1]))
-        {
-          /* Convert d:foo into d:./foo and increase root_len.  */
-          apath[2] = '.';
-          apath[3] = '/';
-          dest++;
-          root_len++;
-          /* strncpy above copied one character too many.  */
-          name--;
-        }
-      else
-        apath[root_len - 1] = '/'; /* make sure it's a forward slash */
-#endif
     }
 
   for (start = end = name; *start != '\0'; start = end)

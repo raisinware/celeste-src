@@ -512,9 +512,10 @@ fatal_error_signal (int sig)
 
       /* Remote children won't automatically get signals sent
          to the process group, so we must send them.  */
+      // TODO: strip all of this out
       for (c = children; c != 0; c = c->next)
         if (c->remote && c->pid > 0)
-          (void) remote_kill (c->pid, sig);
+          (void) -1;
 
       for (c = children; c != 0; c = c->next)
         delete_child_targets (c);

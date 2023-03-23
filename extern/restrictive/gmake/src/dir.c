@@ -98,11 +98,7 @@ static unsigned int open_directories = 0;
 struct directory_contents
   {
     dev_t dev;                  /* Device and inode numbers of this dir.  */
-# ifdef VMS_INO_T
-    ino_t ino[3];
-# else
     ino_t ino;
-# endif
     struct hash_table dirfiles; /* Files in this directory.  */
     unsigned long counter;      /* command_count value when last read. */
     DIR *dirstream;             /* Stream reading this directory.  */
@@ -504,17 +500,6 @@ file_exists_p (const char *name)
 #endif
 
   dirend = strrchr (name, '/');
-#ifdef HAVE_DOS_PATHS
-  /* Forward and backslashes might be mixed.  We need the rightmost one.  */
-  {
-    const char *bslash = strrchr (name, '\\');
-    if (!dirend || bslash > dirend)
-      dirend = bslash;
-    /* The case of "d:file".  */
-    if (!dirend && name[0] && name[1] == ':')
-      dirend = name + 1;
-  }
-#endif /* HAVE_DOS_PATHS */
   if (dirend == NULL)
     return dir_file_exists_p (".", name);
 
@@ -524,12 +509,6 @@ file_exists_p (const char *name)
   else
     {
       char *p;
-#ifdef HAVE_DOS_PATHS
-  /* d:/ and d: are *very* different...  */
-      if (dirend < name + 3 && name[1] == ':' &&
-          (ISDIRSEP (*dirend) || *dirend == ':'))
-        dirend++;
-#endif
       p = alloca (dirend - name + 1);
       memcpy (p, name, dirend - name);
       p[dirend - name] = '\0';
@@ -552,17 +531,6 @@ file_impossible (const char *filename)
   struct dirfile *new;
 
   dirend = strrchr (p, '/');
-#ifdef HAVE_DOS_PATHS
-  /* Forward and backslashes might be mixed.  We need the rightmost one.  */
-  {
-    const char *bslash = strrchr (p, '\\');
-    if (!dirend || bslash > dirend)
-      dirend = bslash;
-    /* The case of "d:file".  */
-    if (!dirend && p[0] && p[1] == ':')
-      dirend = p + 1;
-  }
-#endif /* HAVE_DOS_PATHS */
   if (dirend == NULL)
     dir = find_directory (".");
   else
@@ -574,12 +542,6 @@ file_impossible (const char *filename)
       else
         {
           char *cp;
-#ifdef HAVE_DOS_PATHS
-          /* d:/ and d: are *very* different...  */
-          if (dirend < p + 3 && p[1] == ':' &&
-              (ISDIRSEP (*dirend) || *dirend == ':'))
-            dirend++;
-#endif
           cp = alloca (dirend - p + 1);
           memcpy (cp, p, dirend - p);
           cp[dirend - p] = '\0';
@@ -618,17 +580,6 @@ file_impossible_p (const char *filename)
   struct dirfile dirfile_key;
 
   dirend = strrchr (filename, '/');
-#ifdef HAVE_DOS_PATHS
-  /* Forward and backslashes might be mixed.  We need the rightmost one.  */
-  {
-    const char *bslash = strrchr (filename, '\\');
-    if (!dirend || bslash > dirend)
-      dirend = bslash;
-    /* The case of "d:file".  */
-    if (!dirend && filename[0] && filename[1] == ':')
-      dirend = filename + 1;
-  }
-#endif /* HAVE_DOS_PATHS */
   if (dirend == NULL)
     dir = find_directory (".")->contents;
   else
@@ -640,12 +591,6 @@ file_impossible_p (const char *filename)
       else
         {
           char *cp;
-#ifdef HAVE_DOS_PATHS
-          /* d:/ and d: are *very* different...  */
-          if (dirend < filename + 3 && filename[1] == ':' &&
-              (ISDIRSEP (*dirend) || *dirend == ':'))
-            dirend++;
-#endif
           cp = alloca (dirend - filename + 1);
           memcpy (cp, filename, dirend - filename);
           cp[dirend - filename] = '\0';
@@ -705,15 +650,8 @@ print_dir_data_base (void)
           if (dir->contents == NULL)
             printf (_("# %s: could not be stat'd.\n"), dir->name);
           else if (dir->contents->dirfiles.ht_vec == NULL)
-#if   defined(VMS_INO_T)
-            printf (_("# %s (device %d, inode [%d,%d,%d]): could not be opened.\n"),
-                    dir->name, dir->contents->dev,
-                    dir->contents->ino[0], dir->contents->ino[1],
-                    dir->contents->ino[2]);
-#else
             printf (_("# %s (device %ld, inode %ld): could not be opened.\n"),
                     dir->name, (long) dir->contents->dev, (long) dir->contents->ino);
-#endif
           else
             {
               unsigned int f = 0;
@@ -734,15 +672,8 @@ print_dir_data_base (void)
                         ++f;
                     }
                 }
-#if   defined(VMS_INO_T)
-              printf (_("# %s (device %d, inode [%d,%d,%d]): "),
-                      dir->name, dir->contents->dev,
-                      dir->contents->ino[0], dir->contents->ino[1],
-                      dir->contents->ino[2]);
-#else
               printf (_("# %s (device %ld, inode %ld): "), dir->name,
                       (long)dir->contents->dev, (long)dir->contents->ino);
-#endif
               if (f == 0)
                 fputs (_("No"), stdout);
               else
@@ -786,11 +717,7 @@ struct dirstream
     struct dirfile **dirfile_slot; /* Current slot in table.  */
   };
 
-/* Forward declarations.  */
-static void *open_dirstream (const char *);
-static struct dirent *read_dirstream (void *);
-
-static void *
+void*
 open_dirstream (const char *directory)
 {
   struct dirstream *new;
@@ -813,7 +740,7 @@ open_dirstream (const char *directory)
   return new;
 }
 
-static struct dirent *
+struct dirent*
 read_dirstream (void *stream)
 {
   static char *buf;
@@ -840,12 +767,6 @@ read_dirstream (void *stream)
               buf = xrealloc (buf, bufsz);
             }
           d = (struct dirent *) buf;
-#ifdef __MINGW32__
-# if __MINGW32_MAJOR_VERSION < 3 || (__MINGW32_MAJOR_VERSION == 3 && \
-                                     __MINGW32_MINOR_VERSION == 0)
-          d->d_name = xmalloc (len);
-# endif
-#endif
           FAKE_DIR_ENTRY (d);
 #ifdef _DIRENT_HAVE_D_NAMLEN
           d->d_namlen = len - 1;
@@ -861,54 +782,8 @@ read_dirstream (void *stream)
   return NULL;
 }
 
-/* On 64 bit ReliantUNIX (5.44 and above) in LFS mode, stat() is actually a
- * macro for stat64().  If stat is a macro, make a local wrapper function to
- * invoke it.
- *
- * On MS-Windows, stat() "succeeds" for foo/bar/. where foo/bar is a
- * regular file; fix that here.
- */
-#if !defined(stat) && !defined(WINDOWS32) || defined(VMS)
-#  ifndef HAVE_SYS_STAT_H
-int stat (const char *path, struct stat *sbuf);
-#  endif
-# define local_stat stat
-#else
-static int
-local_stat (const char *path, struct stat *buf)
-{
-  int e;
-
-  EINTRLOOP (e, stat (path, buf));
-  return e;
-}
-#endif
-
-/* Similarly for lstat.  */
-#if !defined(lstat) && !defined(WINDOWS32) || defined(VMS)
-#  ifndef HAVE_SYS_STAT_H
-int lstat (const char *path, struct stat *sbuf);
-#  endif
-# define local_lstat lstat
-#else
-static int
-local_lstat (const char *path, struct stat *buf)
-{
-  int e;
-  EINTRLOOP (e, lstat (path, buf));
-  return e;
-}
-#endif
-
-void
-dir_setup_glob (glob_t *gl)
-{
+void dir_setup_glob (gmake_glob_t *gl) {
   gl->gl_offs = 0;
-  gl->gl_opendir = open_dirstream;
-  gl->gl_readdir = read_dirstream;
-  gl->gl_closedir = free;
-  gl->gl_lstat = local_lstat;
-  gl->gl_stat = local_stat;
 }
 
 void

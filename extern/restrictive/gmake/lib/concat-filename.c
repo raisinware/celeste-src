@@ -16,7 +16,7 @@
 
 /* Written by Bruno Haible <haible@clisp.cons.org>.  */
 
-#include <config.h>
+#include "../../../../contrib/bin/gmake/config.h"
 
 /* Specification.  */
 #include "concat-filename.h"

@@ -21,6 +21,10 @@ this program.  If not, see <https://www.gnu.org/licenses/>.  */
    INCLUDING content imported from gnulib.  BE AWARE!!
 */
 
+#pragma once
+
+#include "../../../../contrib/bin/gmake/config.h"
+
 #undef  HAVE_CONFIG_H
 #define HAVE_CONFIG_H 1
 

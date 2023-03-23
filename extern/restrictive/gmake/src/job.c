@@ -63,9 +63,6 @@ extern int wait3 ();
 # include "../lib/findprog.h"
 #endif
 
-#if !defined (wait) && !defined (POSIX)
-int wait ();
-#endif
 
 #ifndef HAVE_UNION_WAIT
 
@@ -207,7 +204,6 @@ is_bourne_compatible_shell (const char *path)
   return 0;
 }
 
-#ifdef POSIX
 extern sigset_t fatal_signal_set;
 
 static void
@@ -230,39 +226,6 @@ unblock_all_sigs (void)
   sigprocmask (SIG_SETMASK, &empty, (sigset_t *) 0);
 }
 
-#elif defined(HAVE_SIGSETMASK)
-
-extern int fatal_signal_mask;
-
-static void
-block_sigs ()
-{
-  sigblock (fatal_signal_mask);
-}
-
-static void
-unblock_sigs ()
-{
-  sigsetmask (siggetmask () & ~fatal_signal_mask);
-}
-
-void
-unblock_all_sigs ()
-{
-  sigsetmask (0);
-}
-
-#else
-
-#define block_sigs()
-#define unblock_sigs()
-
-void
-unblock_all_sigs ()
-{
-}
-
-#endif
 
 /* Write an error message describing the exit status given in
    EXIT_CODE, EXIT_SIG, and COREDUMP, for the target TARGET_NAME.
@@ -447,13 +410,16 @@ reap_children (int block, int err)
             }
 
           DB (DB_JOBS, (_("Live child %p (%s) PID %s %s\n"),
-                        c, c->file->name, pid2str (c->pid),
+                        (void*)c, c->file->name, pid2str (c->pid),
                         c->remote ? _(" (remote)") : ""));
         }
 
       /* First, check for remote children.  */
-      if (any_remote)
-        pid = remote_status (&exit_code, &exit_sig, &coredump, 0);
+      if (any_remote) {
+         // TODO: strip all of this out
+        errno = ECHILD;
+        pid = -1;
+      }
       else
         pid = 0;
 
@@ -501,7 +467,9 @@ reap_children (int block, int err)
                 break;
 
               /* Now try a blocking wait for a remote child.  */
-              pid = remote_status (&exit_code, &exit_sig, &coredump, 1);
+              // TODO: strip all of this out
+              errno = ECHILD;
+              pid = -1;
               if (pid < 0)
                 pfatal_with_name ("remote_status");
 
@@ -539,7 +507,7 @@ reap_children (int block, int err)
       DB (DB_JOBS, (exit_sig == 0 && exit_code == 0
                     ? _("Reaping winning child %p PID %s %s\n")
                     : _("Reaping losing child %p PID %s %s\n"),
-                    c, pid2str (c->pid), c->remote ? _(" (remote)") : ""));
+                    (void*)c, pid2str (c->pid), c->remote ? _(" (remote)") : ""));
 
       /* If we have started jobs in this second, remove one.  */
       if (job_counter)
@@ -657,7 +625,8 @@ reap_children (int block, int err)
                      Whether or not we want to changes over time.
                      Also, start_remote_job may need state set up
                      by start_remote_job_p.  */
-                  c->remote = start_remote_job_p (0);
+                  // TODO: strip all of this out
+                  c->remote = 0;
                   start_job_command (c);
                   /* Fatal signals are left blocked in case we were
                      about to put that child on the chain.  But it is
@@ -707,7 +676,7 @@ reap_children (int block, int err)
       if (c->pid > 0)
         {
           DB (DB_JOBS, (_("Removing child %p PID %s%s from chain.\n"),
-                        c, pid2str (c->pid), c->remote ? _(" (remote)") : ""));
+                        (void*)c, pid2str (c->pid), c->remote ? _(" (remote)") : ""));
         }
 
       /* There is now another slot open.  */
@@ -761,7 +730,7 @@ free_child (struct child *child)
 
   if (!jobserver_tokens)
     ONS (fatal, NILF, "INTERNAL: Freeing child %p (%s) but no tokens left",
-         child, child->file->name);
+         (void*)child, child->file->name);
 
   /* If we're using the jobserver and this child is not the only outstanding
      job, put a token back into the pipe for it.  */
@@ -770,7 +739,7 @@ free_child (struct child *child)
     {
       jobserver_release (1);
       DB (DB_JOBS, (_("Released token for child %p (%s).\n"),
-                    child, child->file->name));
+                    (void*)child, child->file->name));
     }
 
   --jobserver_tokens;
@@ -1003,9 +972,8 @@ start_job_command (struct child *child)
     {
       int is_remote, used_stdin;
       pid_t id;
-      if (start_remote_job (argv, child->environment,
-                            child->good_stdin ? 0 : get_bad_stdin (),
-                            &is_remote, &id, &used_stdin))
+      // TODO: strip out remote support completely
+      if (-1)
         /* Don't give up; remote execution may fail for various reasons.  If
            so, simply run the job locally.  */
         goto run_local;
@@ -1067,7 +1035,8 @@ start_waiting_job (struct child *c)
      the local load average.  We record that the job should be started
      remotely in C->remote for start_job_command to test.  */
 
-  c->remote = start_remote_job_p (1);
+  // TODO: strip all of this out
+  c->remote = 0;
 
   /* If we are running at least one job already and the load average
      is too high, make this one wait.  */
@@ -1093,7 +1062,7 @@ start_waiting_job (struct child *c)
       if (c->pid > 0)
         {
           DB (DB_JOBS, (_("Putting child %p (%s) PID %s%s on the chain.\n"),
-                        c, c->file->name, pid2str (c->pid),
+                        (void*)c, c->file->name, pid2str (c->pid),
                         c->remote ? _(" (remote)") : ""));
           /* One more job slot is in use.  */
           ++job_slots_used;
@@ -1326,7 +1295,7 @@ new_job (struct file *file)
         if (got_token == 1)
           {
             DB (DB_JOBS, (_("Obtained token for child %p (%s).\n"),
-                          c, c->file->name));
+                          (void*)c, c->file->name));
             break;
           }
       }
@@ -1953,13 +1922,6 @@ construct_command_argv_internal (char *line, char **restp, const char *shell,
       "shift", "test", "times", "trap", "type", "ulimit", "umask", "unalias",
       "unset", "wait", "while", 0 };
 
-# ifdef HAVE_DOS_PATHS
-  /* This is required if the MSYS/Cygwin ports (which do not define
-     WINDOWS32) are compiled with HAVE_DOS_PATHS defined, which uses
-     sh_chars_sh directly (see below).  The value must be identical
-     to that of sh_chars immediately above.  */
-  static const char *sh_chars_sh =  "#;\"*?[]&|<>(){}$`^~!";
-# endif  /* HAVE_DOS_PATHS */
 #endif
   size_t i;
   char *p;
@@ -2098,18 +2060,6 @@ construct_command_argv_internal (char *line, char **restp, const char *shell,
               }
             else if (p[1] != '\0')
               {
-#ifdef HAVE_DOS_PATHS
-                /* Only remove backslashes before characters special to Unixy
-                   shells.  All other backslashes are copied verbatim, since
-                   they are probably DOS-style directory separators.  This
-                   still leaves a small window for problems, but at least it
-                   should work for the vast majority of naive users.  */
-
-                  if (p[1] != '\\' && p[1] != '\'' && !ISSPACE (p[1])
-                      && strchr (sh_chars_sh, p[1]) == 0)
-                    /* back up one notch, to copy the backslash */
-                    --p;
-#endif  /* HAVE_DOS_PATHS */
 
                 /* Copy and skip the following char.  */
                 *ap++ = *++p;

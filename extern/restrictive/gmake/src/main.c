@@ -31,6 +31,11 @@ this program.  If not, see <https://www.gnu.org/licenses/>.  */
 # include <fcntl.h>
 #endif
 
+#include <sys/utsname.h>
+
+#ifdef __GLIBC__
+  #define bsd_signal signal
+#endif
 
 #if defined HAVE_WAITPID || defined HAVE_WAIT3
 # define HAVE_WAIT_NOHANG
@@ -551,11 +556,7 @@ struct output make_sync;
 
 /* Mask of signals that are being caught with fatal_error_signal.  */
 
-#if defined(POSIX)
 sigset_t fatal_signal_set;
-#elif defined(HAVE_SIGSETMASK)
-int fatal_signal_mask;
-#endif
 
 #if !HAVE_DECL_BSD_SIGNAL && !defined bsd_signal
 # if !defined HAVE_SIGACTION
@@ -617,9 +618,6 @@ initialize_stopchar_map (void)
   stopchar_map[(int)'\t'] = MAP_BLANK;
 
   stopchar_map[(int)'/'] = MAP_DIRSEP;
-#if   defined(HAVE_DOS_PATHS)
-  stopchar_map[(int)'\\'] |= MAP_DIRSEP;
-#endif
 
   for (i = 1; i <= UCHAR_MAX; ++i)
     {
@@ -845,13 +843,8 @@ print_usage (int bad)
   for (cpp = usage; *cpp; ++cpp)
     fputs (_(*cpp), usageto);
 
-  if (!remote_description || *remote_description == '\0')
-    fprintf (usageto, _("\nThis program built for %s\n"), make_host);
-  else
-    fprintf (usageto, _("\nThis program built for %s (%s)\n"),
-             make_host, remote_description);
-
-  fprintf (usageto, _("Report bugs to <bug-make@gnu.org>\n"));
+  fprintf (usageto, _("\nThis program built for %s\n"), MAKE_HOST);
+  fprintf (usageto, _("Report bugs to %s\n"), PACKAGE_BUGREPORT);
 
   die (bad ? MAKE_FAILURE : MAKE_SUCCESS);
 }
@@ -950,17 +943,8 @@ main (int argc, char **argv, char **envp)
   (void)bindtextdomain (PACKAGE, LOCALEDIR);
   (void)textdomain (PACKAGE);
 
-#ifdef  POSIX
   sigemptyset (&fatal_signal_set);
 #define ADD_SIG(sig)    sigaddset (&fatal_signal_set, sig)
-#else
-#ifdef  HAVE_SIGSETMASK
-  fatal_signal_mask = 0;
-#define ADD_SIG(sig)    fatal_signal_mask |= sigmask (sig)
-#else
-#define ADD_SIG(sig)    (void)sig
-#endif
-#endif
 
 #define FATAL_SIG(sig)                                                        \
   if (bsd_signal (sig, fatal_error_signal) == SIG_IGN)                        \
@@ -1017,35 +1001,11 @@ main (int argc, char **argv, char **envp)
     program = "make";
   else
     {
-#if defined(HAVE_DOS_PATHS)
-      const char* start = argv[0];
-
-      /* Skip an initial drive specifier if present.  */
-      if (isalpha ((unsigned char)start[0]) && start[1] == ':')
-        start += 2;
-
-      if (start[0] == '\0')
-        program = "make";
-      else
-        {
-          program = start + strlen (start);
-          while (program > start && ! ISDIRSEP (program[-1]))
-            --program;
-
-          /* Remove the .exe extension if present.  */
-          {
-            size_t len = strlen (program);
-            if (len > 4 && streq (&program[len - 4], ".exe"))
-              program = xstrndup (program, len - 4);
-          }
-        }
-#else
       program = strrchr (argv[0], '/');
       if (program == 0)
         program = argv[0];
       else
         ++program;
-#endif
     }
 
   initialize_global_hash_tables ();
@@ -1095,15 +1055,7 @@ main (int argc, char **argv, char **envp)
 #ifndef NO_OUTPUT_SYNC
                            " output-sync"
 #endif
-#ifdef MAKE_SYMLINKS
                            " check-symlink"
-#endif
-#ifdef MAKE_LOAD
-                           " load"
-#endif
-#ifdef HAVE_DOS_PATHS
-                           " dospaths"
-#endif
 #ifdef MAKE_MAINTAINER_MODE
                            " maintainer"
 #endif
@@ -1111,9 +1063,6 @@ main (int argc, char **argv, char **envp)
 
     define_variable_cname (".FEATURES", features, o_default, 0);
   }
-
-  /* Configure GNU Guile support */
-  guile_gmake_setup (NILF);
 
   /* Read in variables from the environment.  It is important that this be
      done before $(MAKE) is figured out so its definitions will not be
@@ -1307,10 +1256,6 @@ main (int argc, char **argv, char **envp)
      find it in the current directory.)  */
   if (current_directory[0] != '\0'
       && argv[0] != 0 && argv[0][0] != '/' && strchr (argv[0], '/') != 0
-#ifdef HAVE_DOS_PATHS
-      && (argv[0][0] != '\\' && (!argv[0][0] || argv[0][1] != ':'))
-      && strchr (argv[0], '\\') != 0
-#endif
       )
     argv[0] = xstrdup (concat (3, current_directory, "/", argv[0]));
 
@@ -1729,13 +1674,6 @@ main (int argc, char **argv, char **envp)
   if (sync_mutex)
     DB (DB_VERBOSE, (_("Using output-sync mutex %s\n"), sync_mutex));
 
-#ifndef MAKE_SYMLINKS
-  if (check_symlink_flag)
-    {
-      O (error, NILF, _("Symbolic links not supported: disabling -L."));
-      check_symlink_flag = 0;
-    }
-#endif
 
   /* Set up MAKEFLAGS and MFLAGS again, so they will be right.  */
 
@@ -1799,9 +1737,6 @@ main (int argc, char **argv, char **envp)
           f->last_mtime = f->mtime_before_update = NEW_MTIME;
         }
     }
-
-  /* Initialize the remote job module.  */
-  remote_setup ();
 
   /* Dump any output we've collected.  */
 
@@ -3113,13 +3048,9 @@ print_version (void)
     /* Do it only once.  */
     return;
 
-  printf ("%sGNU Make %s\n", precede, version_string);
+  printf ("%sGNU Make %s\n", precede, VERSION);
 
-  if (!remote_description || *remote_description == '\0')
-    printf (_("%sBuilt for %s\n"), precede, make_host);
-  else
-    printf (_("%sBuilt for %s (%s)\n"),
-            precede, make_host, remote_description);
+  printf (_("%sBuilt for %s\n"), precede, MAKE_HOST);
 
   /* Print this untranslated.  The coding standards recommend translating the
      (C) to the copyright symbol, but this string is going to change every
@@ -3220,9 +3151,6 @@ die (int status)
       while (job_slots_used > 0)
         reap_children (1, err);
 
-      /* Let the remote job module clean up its state.  */
-      remote_cleanup ();
-
       /* Remove the intermediate files.  */
       remove_intermediates (0);
 
@@ -3258,8 +3186,7 @@ die (int status)
       if (directory_before_chdir != 0)
         {
           /* If it fails we don't care: shut up GCC.  */
-          int _x UNUSED;
-          _x = chdir (directory_before_chdir);
+          chdir (directory_before_chdir);
         }
     }
 
