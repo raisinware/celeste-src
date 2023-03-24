@@ -40,6 +40,11 @@ THIS SOFTWARE.
 #include "awk.h"
 #include "awkgram.tab.h"
 
+#ifdef __GNUC__
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
+
 static void stdinit(void);
 static void flush_all(void);
 
