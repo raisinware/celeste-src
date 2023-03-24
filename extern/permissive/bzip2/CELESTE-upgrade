@@ -1,0 +1,3 @@
+bzip2 was fetched with the following commands
+	curl -OL https://gitlab.com/bzip2/bzip2/-/archive/master/bzip2-master.tar.bz2
+	bsdtar -X CELESTE-Xlist -xf bzip2-master.tar.bz2 --strip-components 1
