@@ -1,7 +1,10 @@
 cmake/
 docs/CMakeLists.txt
 docs/RELEASING.md
+man/bzdiff.1
+man/bzgrep.1
 man/bzip2.1.preformatted
+man/bzmore.1
 man/CMakeLists.txt
 tests/CMakeLists.txt
 .appveyor.yml
