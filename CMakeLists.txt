@@ -9,9 +9,15 @@ add_compile_options(-Werror=implicit-function-declaration -Werror=implicit-int)
 # includes
 include(CheckSymbolExists)
 
+# silence dumb musl-clang warnings 
+if(${CMAKE_C_COMPILER} MATCHES "musl-clang")
+    add_compile_options(-Wno-unused-command-line-argument)
+    add_link_options(-Wno-unused-command-line-argument)
+endif()
+
 # generate gitignore when building out of tree
 if(NOT PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
-  file(GENERATE OUTPUT .gitignore CONTENT "*")
+    file(GENERATE OUTPUT .gitignore CONTENT "*")
 endif()
 
 # check if compiling for glibc

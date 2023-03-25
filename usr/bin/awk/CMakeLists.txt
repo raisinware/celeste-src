@@ -31,6 +31,8 @@ set(AWK_SOURCES
     ${AWK_SRCDIR}/tran.c
 )
 add_executable("awk" ${AWK_SOURCES})
+target_compile_options("awk" PRIVATE -Wno-unused-parameter
+                                     -Wno-unused-but-set-variable)
 target_include_directories("awk"
                            PRIVATE ${AWK_SRCDIR}
                                    ${CMAKE_BINARY_DIR}/usr/bin/awk)

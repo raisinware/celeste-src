@@ -39,19 +39,3 @@ this program.  If not, see <https://www.gnu.org/licenses/>.  */
 /* Declare function prototypes for src/misc.c functions if needed.  */
 
 #include <stddef.h>
-
-#if !HAVE_STRCASECMP && !HAVE_STRICMP && !HAVE_STRCMPI
-int strcasecmp (const char *s1, const char *s2);
-#endif
-
-#if !HAVE_STRNCASECMP && !HAVE_STRNICMP && !HAVE_STRNCMPI
-int strncasecmp (const char *s1, const char *s2, size_t n);
-#endif
-
-#if !HAVE_MEMPCPY
-void *mempcpy (void *dest, const void *src, size_t n);
-#endif
-
-#if !HAVE_STPCPY
-char *stpcpy (char *dest, const char *src);
-#endif

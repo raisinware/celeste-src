@@ -39,6 +39,7 @@ set(FLEX_SOURCES
 add_executable("flex" ${FLEX_SOURCES})
 
 target_compile_definitions("flex" PRIVATE HAVE_CONFIG_H)
+target_compile_options("flex" PRIVATE -Wno-misleading-indentation -Wno-pointer-sign)
 target_include_directories("flex" PRIVATE ${FLEX_SRCDIR} .)
 
 # link to libm because glibc is dumb and has it as a separate shared library

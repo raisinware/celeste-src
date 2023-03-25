@@ -38,4 +38,6 @@ set(GMAKE_SOURCES
 )
 
 add_executable("gmake" ${GMAKE_SOURCES})
+target_compile_options("gmake" PRIVATE -Wno-constant-logical-operand
+                                       -Wno-unused-parameter)
 target_include_directories("gmake" PRIVATE ${GMAKE_SRCDIR} . ${GMAKE_LIBDIR})

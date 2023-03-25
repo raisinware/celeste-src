@@ -45,10 +45,7 @@
 #include <setjmp.h>
 #include <ctype.h>
 #include <libgen.h> /* for XPG version of basename(3) */
-#undef _GNU_SOURCE
-#define _BSD_SOURCE
 #include <string.h>
-#define _GNU_SOURCE
 #include <math.h>
 
 #ifdef HAVE_ASSERT_H

@@ -40,15 +40,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <unistd.h>
 #include <pwd.h>
 
-// disable clangd warnings
+// disable fallthrough warnings only on this piece of code
 #ifdef __GNUC__
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
 #endif
 
 // gmake functions
-void* open_dirstream (const char *);
-struct dirent *read_dirstream (void *);
+extern void* open_dirstream (const char *);
+extern struct dirent *read_dirstream (void *);
 
 struct match
 {
