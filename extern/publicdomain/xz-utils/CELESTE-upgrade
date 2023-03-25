@@ -1,0 +1,3 @@
+xz-utils was fetched with the following commands
+	curl -OL https://tukaani.org/xz/xz-5.4.2.tar.xz
+	bsdtar -X CELESTE-Xlist -xf xz-5.4.2.tar.xz --strip-components 1
