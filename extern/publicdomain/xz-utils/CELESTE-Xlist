@@ -32,6 +32,7 @@ po/vi.gmo
 po/zh_CN.gmo
 po/zh_TW.gmo
 src/liblzma/api/Makefile.in
+src/liblzma/liblzma_w32res.rc
 src/liblzma/check/Makefile.inc
 src/liblzma/common/Makefile.inc
 src/common/common_w32res.rc
@@ -42,9 +43,13 @@ src/liblzma/Makefile.in
 src/liblzma/rangecoder/Makefile.inc
 src/liblzma/simple/Makefile.inc
 src/lzmainfo/Makefile.in
+src/lzmainfo/lzmainfo_w32res.rc
 src/scripts/
 src/xzdec/Makefile.in
+src/xzdec/lzmadec_w32res.rc
+src/xzdec/xzdec_w32res.rc
 src/xz/Makefile.in
+src/xz/xz_w32res.rc
 src/Makefile.in
 tests/Makefile.in
 windows/
