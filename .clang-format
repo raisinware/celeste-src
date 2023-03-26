@@ -1,0 +1,13 @@
+---
+BasedOnStyle: LLVM
+AlignAfterOpenBracket: Align
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+ColumnLimit: 80
+IndentPPDirectives: BeforeHash
+IndentWidth: 4
+PointerAlignment: Left
+TabWidth: 4
+UseCRLF: false
+UseTab: AlignWithSpaces
+...

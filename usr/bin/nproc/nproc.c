@@ -13,24 +13,21 @@ int getCPUs(void) {
 	// use 'sched_getaffinity' syscall wrapper on linux
 	cpu_set_t set;
 
-	if (sched_getaffinity(0, sizeof(cpu_set_t), &set) == 0)
-	{
+	if (sched_getaffinity(0, sizeof(cpu_set_t), &set) == 0) {
 		int cpus = CPU_COUNT(&set);
 		return cpus;
 	}
 
 #elif defined(_SC_NPROCESSORS_ONLN)
 	// fallback to sysconf on supported systems for getting online cpus
-	int cpus = sysconf(_SC_NPROCESSORS_ONLN)
+	int cpus = sysconf(_SC_NPROCESSORS_ONLN);
 
-	if (cpus > 0) {
+	if (cpus > 0)
 		return cpus;
-	}
 #endif
 
 	return 1;
 }
-
 
 /// Returns all cores/CPUs.
 int getAllCPUs(void) {
@@ -48,7 +45,7 @@ int getAllCPUs(void) {
 	return cpus;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
 	// check for --all argument and call getAllCPUs()
 	if (argc == 2 && (strcmp(argv[1], "--all") == 0)) {
 		printf("%d\n", getAllCPUs());

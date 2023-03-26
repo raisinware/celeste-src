@@ -3,13 +3,13 @@
 
 #include <stdio.h>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
 	// iterate through arguments and print to stdout.
-	for ( int i=1; i < argc; i++ ) {
+	for (int i = 1; i < argc; i++) {
 		fputs(argv[i], stdout);
 
 		// print space if not the last argument
-		if (i < (argc-1))
+		if (i < (argc - 1))
 			fputc(' ', stdout);
 	}
 

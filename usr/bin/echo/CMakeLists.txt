@@ -1,3 +1,4 @@
 # SPDX-License-Identifier: Apache-2.0 OR ISC
 
 add_executable("echo" echo.c)
+target_clangformat_setup("echo")

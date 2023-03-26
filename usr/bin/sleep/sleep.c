@@ -18,9 +18,9 @@ int main(int argc, char* argv[]) {
 	const char* errstr;
 
 	// check that only 1 argument was passed
-	if (argc != 2) 
+	if (argc != 2)
 		usage();
-	
+
 	unsigned int num = strtonum(argv[1], 0, UINT_MAX, &errstr);
 
 	if (errstr != NULL) {

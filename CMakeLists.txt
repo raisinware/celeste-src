@@ -3,11 +3,13 @@
 cmake_minimum_required(VERSION "3.20")
 project("Celeste Linux Core Userspace" VERSION "0.1")
 set(CMAKE_C_STANDARD "23")
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 add_compile_options(-Wall -Wextra -Wpedantic)
 add_compile_options(-Werror=implicit-function-declaration -Werror=implicit-int)
 
 # includes
 include(CheckSymbolExists)
+include(ClangFormat)
 
 # silence dumb musl-clang warnings 
 if(${CMAKE_C_COMPILER} MATCHES "musl-clang")
