@@ -1,0 +1,3 @@
+zstd was fetched with the following commands
+	curl -OL https://github.com/facebook/zstd/releases/download/v1.5.4/zstd-1.5.4.tar.zst
+	bsdtar -X CELESTE-Xlist -xf zstd-1.5.4.tar.zst --strip-components 1 
