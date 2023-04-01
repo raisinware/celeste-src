@@ -1,5 +1,5 @@
 #!/bin/sh
-# SPDX-License-Identifier: Apache-2.0 OR ISC
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 # mkstage1scan.sh - generate stage1scan.c
 
 FLEX_SRCDIR="../../../extern/permissive/flex/src"

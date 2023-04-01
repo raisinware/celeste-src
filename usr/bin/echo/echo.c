@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0 OR ISC
+// SPDX-License-Identifier: Apache-2.0 OR MIT
 // echo.c - print all arguments and end with a newline
 
 #include <stdio.h>

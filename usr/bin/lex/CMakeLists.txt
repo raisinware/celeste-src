@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0 OR ISC
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 
 set(FLEX_VERSION "2.6.4")
 set(FLEX_SRCDIR  "${CMAKE_SOURCE_DIR}/extern/permissive/flex/src")

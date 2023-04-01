@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0 OR ISC
+// SPDX-License-Identifier: Apache-2.0 OR MIT
 // sleep.c - sleep for x amount of seconds
 
 #include "../../include/CelesteC.h"

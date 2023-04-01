@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0 OR ISC
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 
 set(BYACC_VERSION "20230219")
 set(BYACC_SRCDIR  "${CMAKE_SOURCE_DIR}/extern/publicdomain/byacc")

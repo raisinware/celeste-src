@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0 OR ISC
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 
 set(AWK_VERSION "20221215")
 set(AWK_SRCDIR "${CMAKE_SOURCE_DIR}/extern/permissive/one-true-awk")

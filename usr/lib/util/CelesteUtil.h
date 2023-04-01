@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0 OR ISC
+// SPDX-License-Identifier: Apache-2.0 OR MIT
 // CelesteUtil.h - main header file for libutil
 
 // libutil is a unportable, Celeste specific library for common utility

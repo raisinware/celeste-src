@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0 OR ISC
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 
 set(LIBBZ2_VERSION "1.1.0")
 set(LIBBZ2_SRCDIR "${CMAKE_SOURCE_DIR}/extern/permissive/bzip2")

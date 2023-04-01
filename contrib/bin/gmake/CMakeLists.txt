@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0 OR ISC
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 
 set(GMAKE_VERSION "4.4.1")
 set(GMAKE_SRCDIR "${CMAKE_SOURCE_DIR}/extern/restrictive/gmake/src")

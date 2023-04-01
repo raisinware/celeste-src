@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0 OR ISC
+// SPDX-License-Identifier: Apache-2.0 OR MIT
 // strtonum.c - convert string to number with strict error checking
 
 #include "CelesteUtil.h"

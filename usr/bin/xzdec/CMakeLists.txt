@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0 OR ISC
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 
 set(XZDEC_SRCDIR "${CMAKE_SOURCE_DIR}/extern/publicdomain/xz-utils/src")
 

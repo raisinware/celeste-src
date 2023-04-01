@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0 OR ISC
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 
 set(ZLIB_VERSION "1.2.13")
 set(ZLIB_SRCDIR "${CMAKE_SOURCE_DIR}/extern/permissive/zlib")

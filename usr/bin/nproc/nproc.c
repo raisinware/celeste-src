@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0 OR ISC
+// SPDX-License-Identifier: Apache-2.0 OR MIT
 // nproc.c - get the available cpus
 
 #define _GNU_SOURCE
