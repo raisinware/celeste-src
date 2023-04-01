@@ -24,5 +24,6 @@ set(BYACC_SOURCES
 
 add_executable("byacc" ${BYACC_SOURCES})
 
+set_target_properties("byacc" PROPERTIES C_CLANG_TIDY "")
 target_compile_definitions("byacc" PRIVATE HAVE_CONFIG_H YYPATCH=${BYACC_VERSION})
 target_include_directories("byacc" PRIVATE ${BYACC_SRCDIR} .)

@@ -31,6 +31,7 @@ set(AWK_SOURCES
     ${AWK_SRCDIR}/tran.c
 )
 add_executable("awk" ${AWK_SOURCES})
+set_target_properties("awk" PROPERTIES C_CLANG_TIDY "")
 target_compile_options("awk" PRIVATE -Wno-unused-parameter
                                      -Wno-unused-but-set-variable)
 target_include_directories("awk"

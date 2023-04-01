@@ -1,3 +1,4 @@
+---
 If:
   PathMatch: [.*\.c, .*\.h]
 CompileFlags:
@@ -16,3 +17,25 @@ CompileFlags:
     -Wextra,
     -Wpedantic,
     ]
+---
+If:
+  PathMatch: [.*\.cc, .*\.hh]
+CompileFlags:
+  Add: [
+    -xc++,
+    -std=c++11,
+    -stdlib=libc++,
+    -Wall,
+    -Wc++11-compat-pedantic,
+    -Wc++14-compat-pedantic,
+    -Wc++14-extensions,
+    -Wc++17-compat-pedantic,
+    -Wc++17-extensions,
+    -Wc++20-compat-pedantic,
+    -Wc++20-extensions,
+    -Wc++2b-compat-pedantic,
+    -Wc++2b-extensions,
+    -Wextra,
+    -Wpedantic,
+    ]
+...

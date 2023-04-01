@@ -38,6 +38,7 @@ set(FLEX_SOURCES
 
 add_executable("flex" ${FLEX_SOURCES})
 
+set_target_properties("flex" PROPERTIES C_CLANG_TIDY "")
 target_compile_definitions("flex" PRIVATE HAVE_CONFIG_H)
 target_compile_options("flex" PRIVATE -Wno-misleading-indentation -Wno-pointer-sign)
 target_include_directories("flex" PRIVATE ${FLEX_SRCDIR} .)

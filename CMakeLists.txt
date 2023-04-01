@@ -11,6 +11,9 @@ add_compile_options(-Werror=implicit-function-declaration -Werror=implicit-int)
 include(CheckSymbolExists)
 include(ClangFormat)
 
+# options
+option(CELESTE_CLANG_TIDY "Enable clang tidy while building." OFF)
+
 # silence dumb musl-clang warnings 
 if(${CMAKE_C_COMPILER} MATCHES "musl-clang")
     add_compile_options(-Wno-unused-command-line-argument)
@@ -27,6 +30,11 @@ check_symbol_exists(__GLIBC__ "features.h" GLIBC_TARGET)
 if(GLIBC_TARGET)
     message(WARNING "Compiling the userspace on a glibc target is only "
                     "supported for development testing purposes.")
+endif()
+
+# handle options
+if(CELESTE_CLANG_TIDY)
+    set(CMAKE_C_CLANG_TIDY clang-tidy --config=${PROJECT_SOURCE_DIR}/.clang-tidy)
 endif()
 
 # start rest of build process

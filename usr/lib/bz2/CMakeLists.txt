@@ -21,4 +21,5 @@ add_library("libbz2static" STATIC "${LIBBZ2_SOURCES}")
 target_include_directories("libbz2static" PRIVATE .)
 target_compile_options("libbz2static" PRIVATE -Wno-unused-parameter)
 
-set_target_properties("libbz2" "libbz2static" PROPERTIES OUTPUT_NAME "bz2")
+set_target_properties("libbz2" "libbz2static" PROPERTIES OUTPUT_NAME "bz2"
+                                                         C_CLANG_TIDY "")

@@ -194,4 +194,5 @@ target_include_directories("liblzmastatic" PRIVATE
     .
 )
 
-set_target_properties("liblzma" "liblzmastatic" PROPERTIES OUTPUT_NAME "lzma")
+set_target_properties("liblzma" "liblzmastatic" PROPERTIES OUTPUT_NAME "lzma"
+                                                           C_CLANG_TIDY "")

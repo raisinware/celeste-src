@@ -48,6 +48,7 @@ set(XZ_SOURCES
 
 add_executable("xz" ${XZ_SOURCES})
 
+set_target_properties("xz" PROPERTIES C_CLANG_TIDY "")
 target_link_libraries("xz" PRIVATE liblzma)
 target_compile_definitions("xz" PRIVATE HAVE_CONFIG_H)
 target_include_directories("xz" PRIVATE

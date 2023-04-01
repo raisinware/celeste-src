@@ -46,4 +46,5 @@ add_library("zlibstatic" STATIC
         "${ZLIB_SOURCES}" "${ZLIB_PUBLIC_HDRS}" "${ZLIB_PRIVATE_HDRS}")
 target_include_directories("zlibstatic" PUBLIC .)
 
-set_target_properties("zlib" "zlibstatic" PROPERTIES OUTPUT_NAME "z")
+set_target_properties("zlib" "zlibstatic" PROPERTIES OUTPUT_NAME "z"
+                                                     C_CLANG_TIDY "")

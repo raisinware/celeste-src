@@ -1,0 +1,5 @@
+---
+Checks: '-*,bugprone-*,clang-analyzer-*,-clang-analyzer-cplusplus*,clang-diagnostic-*,modernize-*,performance-*,portability-*,readability-*'
+FormatStyle: none
+UseColor: true
+...

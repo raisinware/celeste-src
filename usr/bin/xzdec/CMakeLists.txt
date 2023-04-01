@@ -17,6 +17,7 @@ set(XZDEC_SOURCES
 
 add_executable("xzdec" ${XZDEC_SOURCES})
 
+set_target_properties("xzdec" PROPERTIES C_CLANG_TIDY "")
 target_link_libraries("xzdec" PRIVATE liblzma)
 target_compile_definitions("xzdec" PRIVATE HAVE_CONFIG_H)
 target_include_directories("xzdec" PRIVATE

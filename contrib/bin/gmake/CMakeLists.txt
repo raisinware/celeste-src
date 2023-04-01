@@ -38,6 +38,8 @@ set(GMAKE_SOURCES
 )
 
 add_executable("gmake" ${GMAKE_SOURCES})
+
+set_target_properties("gmake" PROPERTIES C_CLANG_TIDY "")
 target_compile_options("gmake" PRIVATE -Wno-constant-logical-operand
                                        -Wno-unused-parameter)
 target_include_directories("gmake" PRIVATE ${GMAKE_SRCDIR} . ${GMAKE_LIBDIR})
