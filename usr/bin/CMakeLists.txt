@@ -1,7 +1,8 @@
-# SPDX-License-Identifier: Apache-2.0 OR ISC
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 
 add_subdirectory("awk")
 add_subdirectory("bzip2")
+add_subdirectory("cat")
 add_subdirectory("echo")
 add_subdirectory("expr")
 add_subdirectory("false")

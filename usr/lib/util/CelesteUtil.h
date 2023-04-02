@@ -18,6 +18,9 @@ const char* getprogname(void);
 /// no-op macro for bsd compat
 #define setprogname(x)
 
+/// Determine if 2 strings are equal. Returns true if equal, and false if not.
+#define STREQ(str1, str2) (strcmp(str1, str2) == 0)
+
 /// Convert a string into a number with error checking
 long long strtonum(const char* str, long long minval, long long maxval,
                    const char** errstrp);
