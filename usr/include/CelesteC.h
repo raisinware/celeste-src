@@ -18,14 +18,13 @@
 // if your compiler doesn't support this extension, it sucks
 #pragma once
 
-#if defined(__STDC__) && (__STDC_VERSION__ < 201112L)
-	// stop compilation if not compiling in C11+ mode.
-	// most of the code could probably compile in C99 with some modifications,
-	// but that would require the use of ugly compiler extensions and C11 has
-	// been out for a decade already. If your compiler can't do C11, then it
-	// can't even compile the kernel anyways.
+#if defined(__STDC__) && (__STDC_VERSION__ < 201710L)
+	// stop compilation if not compiling in C17+ mode.
+	// most of the code could probably compile in C99/C11 with some
+	// modifications, but that would require the use of more ugly compiler
+	// extensions and you already need a C++17 compiler to compile LLVM.
 
-	#error Please compile Celeste Linux in C11 mode or higher.
+	#error Please compile Celeste Linux in C17 mode or higher.
 #endif
 
 
@@ -82,7 +81,7 @@
 	#define __nodiscard(msg)
 #endif
 
-// use noreturn attribute on C2x instead of the C11 version.
+// use noreturn attribute on C2x instead of the C11/C17 version.
 // very hacky but important for verifying code compatibility
 #if defined(noreturn) && __has_c_attribute(noreturn)
 	#undef noreturn

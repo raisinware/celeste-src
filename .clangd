@@ -4,17 +4,17 @@ If:
 CompileFlags:
   Add: [
     -xc,
-    -std=c11,
+    -std=c17,
     -Wall,
     -Wc2x-compat,
     -Wc2x-extensions,
-    -Werror=implicit-fallthrough,
     -Werror=implicit-function-declaration,
     -Werror=implicit-int,
     -Werror=return-type,
     -Werror=strict-prototypes,
     -Werror=deprecated-non-prototype
     -Wextra,
+    -Wimplicit-fallthrough,
     -Wpedantic,
     ]
 ---
@@ -23,14 +23,10 @@ If:
 CompileFlags:
   Add: [
     -xc++,
-    -std=c++11,
+    -std=c++17,
     -stdlib=libc++,
     -Wall,
-    -Wc++11-compat-pedantic,
-    -Wc++14-compat-pedantic,
-    -Wc++14-extensions,
     -Wc++17-compat-pedantic,
-    -Wc++17-extensions,
     -Wc++20-compat-pedantic,
     -Wc++20-extensions,
     -Wc++2b-compat-pedantic,
