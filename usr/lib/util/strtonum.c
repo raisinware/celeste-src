@@ -21,16 +21,18 @@ long long strtonum(const char* str, long long minval, long long maxval,
 	} else {
 		num = strtoll(str, &leftover, 10);
 
-		if ( (num < minval) || (num > maxval) )
+		if ( (num < minval) || (num > maxval) ) {
 			errno = ERANGE;
-		if ( (str == leftover) || (*leftover != '\0') )
+		} else if ( (str == leftover) || (*leftover != '\0') ) {
 			errno = EINVAL;
+		}
 	}
 
 	// if error happened, set errstrp to an error message, else restore errno
 	if (errno != 0){
-		if (errstrp != NULL)
+		if (errstrp != NULL) {
 			*errstrp = strerror(errno);
+		}
 
 		num = 0;
 	} else {
