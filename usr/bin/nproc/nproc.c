@@ -7,6 +7,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#define STREQ(str1, str2) (strcmp(str1, str2) == 0)
+
 /// Returns available cores/CPUs.
 int getCPUs(void) {
 #if defined(__linux__)
@@ -47,7 +49,7 @@ int getAllCPUs(void) {
 
 int main(int argc, char* argv[]) {
 	// check for --all argument and call getAllCPUs()
-	if (argc == 2 && (strcmp(argv[1], "--all") == 0)) {
+	if (argc == 2 && STREQ(argv[1], "--all")) {
 		printf("%d\n", getAllCPUs());
 		return 0;
 	}
