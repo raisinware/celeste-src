@@ -54,3 +54,7 @@ usr/bin/printf/tests/**
 
 build/**
 !*.modulemap
+
+# rust
+**/target
+Cargo.lock
