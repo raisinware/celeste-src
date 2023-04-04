@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "bin/posix/false",
+    "bin/posix/true",
+]
