@@ -1,6 +1,8 @@
 [workspace]
 
 members = [
-    "bin/posix/false",
-    "bin/posix/true",
+    "bin/posix/true-and-false",
 ]
+
+[profile.release]
+lto = true
