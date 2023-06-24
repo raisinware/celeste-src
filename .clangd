@@ -4,10 +4,8 @@ If:
 CompileFlags:
   Add: [
     -xc,
-    -std=c17,
+    -std=c2x,
     -Wall,
-    -Wc2x-compat,
-    -Wc2x-extensions,
     -Werror=implicit-function-declaration,
     -Werror=implicit-int,
     -Werror=return-type,
@@ -17,6 +15,13 @@ CompileFlags:
     -Wimplicit-fallthrough,
     -Wpedantic,
     ]
+---
+If:
+  PathMatch: [.*\.h]
+CompileFlags:
+  Add: [
+    -Wno-empty-translation-unit,
+  ]
 ---
 If:
   PathMatch: [.*\.cc, .*\.hh]

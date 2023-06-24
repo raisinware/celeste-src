@@ -10,13 +10,13 @@
 #define STREQ(str1, str2) (strcmp(str1, str2) == 0)
 
 /// Returns available cores/CPUs.
-int getCPUs(void) {
+long getCPUs(void) {
 #if defined(__linux__)
 	// use 'sched_getaffinity' syscall wrapper on linux
 	cpu_set_t set;
 
 	if (sched_getaffinity(0, sizeof(cpu_set_t), &set) == 0) {
-		int cpus = CPU_COUNT(&set);
+		long cpus = CPU_COUNT(&set);
 		return cpus;
 	}
 
@@ -32,13 +32,13 @@ int getCPUs(void) {
 }
 
 /// Returns all cores/CPUs.
-int getAllCPUs(void) {
-	int cpus = getCPUs();
+long getAllCPUs(void) {
+	long cpus = getCPUs();
 
 	/// TODO: make this work properly on musl
 #ifdef _SC_NPROCESSORS_CONF
 	// use sysconf to determine all avalible cpus on supported systems
-	int all_cpus = sysconf(_SC_NPROCESSORS_CONF);
+	long all_cpus = sysconf(_SC_NPROCESSORS_CONF);
 	if (all_cpus >= cpus) {
 		return all_cpus;
 	}
@@ -50,10 +50,10 @@ int getAllCPUs(void) {
 int main(int argc, char* argv[]) {
 	// check for --all argument and call getAllCPUs()
 	if (argc == 2 && STREQ(argv[1], "--all")) {
-		printf("%d\n", getAllCPUs());
+		printf("%ld\n", getAllCPUs());
 		return 0;
 	}
 
-	printf("%d\n", getCPUs());
+	printf("%ld\n", getCPUs());
 	return 0;
 }

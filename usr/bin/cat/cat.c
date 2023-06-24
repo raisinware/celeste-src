@@ -18,7 +18,7 @@
 const char nya[] =  "\nnya~ :333 (^w^)";
 
 /// Print error message, usage of command, and exit program with failure
-noreturn
+[[noreturn]]
 static void usage(void) {
 	if (errno != 0) {
 		perror("Error");
@@ -31,7 +31,7 @@ static void usage(void) {
 
 /// Print a file to stdout. Uses the sendfile linux syscall for maximum
 /// performance. Returns 0 on success, and -1 on failure.
-__nodiscard("Failures should be handled")
+[[nodiscard("Failures should be handled")]]
 static int print_file(int _fd) {
 	struct stat finfo;
 	size_t rbytes;

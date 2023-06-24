@@ -18,91 +18,47 @@
 // if your compiler doesn't support this extension, it sucks
 #pragma once
 
-#if defined(__STDC__) && (__STDC_VERSION__ < 201710L)
-	// stop compilation if not compiling in C17+ mode.
-	// most of the code could probably compile in C99/C11 with some
-	// modifications, but that would require the use of more ugly compiler
-	// extensions and you already need a C++17 compiler to compile LLVM.
-
-	#error Please compile Celeste Linux in C17 mode or higher.
-#endif
-
-
-// Celeste code should always have access to assertions, noreturn, and bool
-#include <assert.h>
-#include <stdnoreturn.h>
-
 #if defined(__STDC__) && (__STDC_VERSION__ < 202000L)
-	// these should have been keywords from the start
-	#include <stdbool.h>
-#endif
+	// stop compilation if not compiling in C2x+ mode.
+	// most of the code could probably compile in C99/C11/C17 with some
+	// modifications, but i'd rather focus on keeping cruft low for the eventual
+	// 1.0 release of Celeste Linux.
 
-// no-op attribute checking macros for pre-C2x and non-gcc compilers
-#ifndef __has_c_attribute
-	#define __has_c_attribute(x) 0
-#endif
-#ifndef __has_attribute
-	#define __has_attribute(x) 0
-#endif
-
-// __deprecated attribute (C2x)
-#if __has_c_attribute(deprecated)
-	#define __deprecated(msg) [[deprecated(msg)]]
-#elif __has_attribute(deprecated)
-	#define __deprecated(msg) __attribute__((deprecated(msg)))
-#elif defined(_MSC_VER)
-	#define __deprecated(msg) __declspec(deprecated(msg))
-#endif
-
-// __EXPLICIT_FALLTHROUGH__ attribute (C2x)
-#if __has_c_attribute(fallthrough)
-	#define __EXPLICIT_FALLTHROUGH__ [[fallthrough]]
-#elif __has_attribute(unused)
-	#define __EXPLICIT_FALLTHROUGH__ __attribute__((fallthrough))
-#else
-	#define __EXPLICIT_FALLTHROUGH__
-#endif
-
-// __maybe_unused attribute (C2x)
-#if __has_c_attribute(maybe_unused)
-	#define __maybe_unused [[maybe_unused]]
-#elif __has_attribute(unused)
-	#define __maybe_unused __attribute__((unused))
-#else
-	#define __maybe_unused
-#endif
-
-// __nodiscard attribute (C2x)
-#if __has_c_attribute(nodiscard)
-	#define __nodiscard(msg) [[nodiscard(msg)]]
-#elif __has_attribute(warn_unused_result)
-	#define __nodiscard(msg) __attribute__((warn_unused_result(msg)))
-#else
-	#define __nodiscard(msg)
-#endif
-
-// use noreturn attribute on C2x instead of the C11/C17 version.
-// very hacky but important for verifying code compatibility
-#if defined(noreturn) && __has_c_attribute(noreturn)
-	#undef noreturn
-	#define noreturn [[__noreturn__]]
+	#error Please compile Celeste Linux in C2x mode or higher.
 #endif
 
 // __reproducible (C2x)
 #if __has_c_attribute(reproducible)
 	#define __reproducible [[reproducible]]
-#elif __has_attribute(pure)
-	#define __reproducible __attribute__((pure))
+#elif __has_c_attribute(gnu::pure)
+	#define __reproducible [[gnu::pure]]
+#else
+	#define __reproducible
 #endif
 
-// __unsequenced (C2x)
+// __unsequenced (C2x )
 #if __has_c_attribute(unsequenced)
 	#define __unsequenced [[unsequenced]]
-#elif __has_attribute(const)
-	#define __unsequenced __attribute__((const))
+#elif __has_c_attribute(gnu::const)
+	#define __unsequenced [[gnu::const]]
+#else
+	#define __unsequenced
 #endif
 
 // __used attribute (gnu extension)
-#if __has_attribute(used)
-	#define __used __attribute__((used))
+#if __has_c_attribute(gnu::used)
+	#define __used [[gnu::used]]
+#else
+	#define __used
 #endif
+
+#if __has_c_attribute(gnu::visibility)
+	#define CELESTE_PUBLIC [[gnu::visibility("default")]]
+	#define CELESTE_PRIVATE [[gnu::visibility("hidden")]]
+#else
+	#define CELESTE_PUBLIC
+	#define CELESTE_PRIVATE
+#endif
+
+[[maybe_unused]]
+extern bool __celeste_isoc_compliance; // NOLINT
