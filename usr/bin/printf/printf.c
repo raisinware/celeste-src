@@ -37,15 +37,15 @@
 #include "../../lib/util/CelesteUtil.h"
 
 #ifndef lint
-__used
+[[CELESTE_USED]]
 static char const copyright[] =
 "@(#) Copyright (c) 1989, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
 
-__used
+[[CELESTE_USED]]
 static char const sccsid[] = "@(#)printf.c	8.1 (Berkeley) 7/20/93";
 
-__used
+[[CELESTE_USED]]
 static const char rcsid[] =
   "$FreeBSD$ commit: 5dbd4b8e96521244525a0fee29694719c873bd75";
 #endif /* not lint */

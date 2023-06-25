@@ -21,8 +21,10 @@
 #define STREQ(str1, str2) (strcmp(str1, str2) == 0)
 
 /// Get the name of the current program
-CELESTE_PUBLIC __reproducible const char* getprogname(void);
+[[CELESTE_PUBLIC, __reproducible__]] const char* getprogname(void);
 
 /// Convert a string into a number with error checking
-CELESTE_PUBLIC long long strtonum(const char* str, long long minval,
-                                  long long maxval, const char** errstrp);
+[[CELESTE_PUBLIC, CELESTE_NONNULL(1)]] long long strtonum(const char* str,
+                                                          long long minval,
+                                                          long long maxval,
+                                                          const char** errstrp);
