@@ -1,8 +1,0 @@
-[workspace]
-
-members = [
-    "bin/posix/true-and-false",
-]
-
-[profile.release]
-lto = true
