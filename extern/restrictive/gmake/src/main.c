@@ -880,13 +880,8 @@ temp_stdin_unlink (void)
 extern char **environ;
 #endif
 
-#if defined(_AMIGA) || defined(MK_OS_ZOS)
-int
-main (int argc, char **argv)
-#else
 int
 main (int argc, char **argv, char **envp)
-#endif
 {
   int makefile_status = MAKE_SUCCESS;
   struct goaldep *read_files;
@@ -908,27 +903,6 @@ main (int argc, char **argv, char **envp)
   output_init (&make_sync);
 
   initialize_stopchar_map();
-
-#ifdef SET_STACK_SIZE
- /* Get rid of any avoidable limit on stack size.  */
-  {
-    struct rlimit rlim;
-
-    /* Set the stack limit huge so that alloca does not fail.  */
-    if (getrlimit (RLIMIT_STACK, &rlim) == 0
-        && rlim.rlim_cur > 0 && rlim.rlim_cur < rlim.rlim_max)
-      {
-        stack_limit = rlim;
-        rlim.rlim_cur = rlim.rlim_max;
-        setrlimit (RLIMIT_STACK, &rlim);
-      }
-    else
-      stack_limit.rlim_cur = 0;
-  }
-#endif
-
-  /* Needed for OS/2 */
-  initialize_main (&argc, &argv);
 
 #ifdef MAKE_MAINTAINER_MODE
   /* In maintainer mode we always enable verification.  */
@@ -995,18 +969,7 @@ main (int argc, char **argv, char **envp)
 
   /* Figure out where this program lives.  */
 
-  if (argv[0] == 0)
-    argv[0] = (char *)"";
-  if (argv[0][0] == '\0')
-    program = "make";
-  else
-    {
-      program = strrchr (argv[0], '/');
-      if (program == 0)
-        program = argv[0];
-      else
-        ++program;
-    }
+  program = program_invocation_short_name;
 
   initialize_global_hash_tables ();
 
@@ -1018,11 +981,7 @@ main (int argc, char **argv, char **envp)
 
   if (getcwd (current_directory, GET_PATH_MAX) == 0)
     {
-#ifdef  HAVE_GETCWD
       perror_with_name ("getcwd", "");
-#else
-      OS (error, NILF, "getwd: %s", current_directory);
-#endif
       current_directory[0] = '\0';
       directory_before_chdir = 0;
     }
