@@ -49,7 +49,7 @@
 #if __has_c_attribute(gnu::used)
 	#define __used [[gnu::used]]
 #else
-	#define __used
+	#define __used [[maybe_unused]]
 #endif
 
 #if __has_c_attribute(gnu::visibility)

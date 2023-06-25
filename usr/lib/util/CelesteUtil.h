@@ -12,12 +12,13 @@
 
 #pragma once
 #include "../../include/CelesteC.h"
+#include <string.h>
 
 /// Get the name of the current program
-CELESTE_PUBLIC const char* getprogname(void);
+CELESTE_PUBLIC __reproducible const char* getprogname(void);
 
 /// no-op macro for bsd compat
-#define setprogname(x)
+#define setprogname(x) do {} while (0)
 
 /// Determine if 2 strings are equal. Returns true if equal, and false if not.
 #define STREQ(str1, str2) (strcmp(str1, str2) == 0)

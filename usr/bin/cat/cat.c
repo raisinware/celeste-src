@@ -62,7 +62,7 @@ static int print_file(int _fd) {
 
 /// write `len` amount of bytes to `buf`, and return the bytes written
 static ssize_t writeall(int _fd, void* buf, size_t len) {
-  size_t count = 0;
+  ssize_t count = 0;
 
   while (count<len) {
     ssize_t _wb = write(_fd, count+(char *)buf, len-count);
