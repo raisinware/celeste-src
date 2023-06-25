@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
 
 	unsigned int num = strtonum(argv[1], 0, UINT_MAX, &errstr);
 
-	if (errstr != NULL) {
+	if (errstr != nullptr) {
 		fprintf(stderr, "Error: %s\n", errstr);
 		usage();
 	} else {

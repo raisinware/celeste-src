@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define BASE_TEN 10
+
 long long strtonum(const char* str, long long minval, long long maxval,
                    const char** errstrp) {
 	long long num = 0;
@@ -19,7 +21,7 @@ long long strtonum(const char* str, long long minval, long long maxval,
 	if (minval > maxval){
 		errno = EINVAL;
 	} else {
-		num = strtoll(str, &leftover, 10);
+		num = strtoll(str, &leftover, BASE_TEN);
 
 		if ( (num < minval) || (num > maxval) ) {
 			errno = ERANGE;
@@ -30,7 +32,7 @@ long long strtonum(const char* str, long long minval, long long maxval,
 
 	// if error happened, set errstrp to an error message, else restore errno
 	if (errno != 0){
-		if (errstrp != NULL) {
+		if (errstrp != nullptr) {
 			*errstrp = strerror(errno);
 		}
 

@@ -47,7 +47,7 @@ static int print_file(int _fd) {
 	rbytes = finfo.st_size;
 
 	while (rbytes != 0) {
-		sfrc = sendfile(STDOUT_FILENO, _fd, NULL, rbytes);
+		sfrc = sendfile(STDOUT_FILENO, _fd, nullptr, rbytes);
 
 		// error check
 		if (sfrc == -1) {
