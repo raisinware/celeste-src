@@ -27,8 +27,7 @@
 	#error Please compile Celeste Linux in C2x mode or higher.
 #endif
 
-[[maybe_unused]]
-extern bool __celeste_isoc_compliance; // NOLINT
+[[maybe_unused]] extern bool __celeste_isoc_compliance; // NOLINT
 
 /// `__reproducible__` and `__unsequenced__` attributes
 ///

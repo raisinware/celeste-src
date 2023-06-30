@@ -6,5 +6,5 @@
 #include <errno.h>
 
 const char* getprogname(void) {
-    return program_invocation_short_name;
+	return program_invocation_short_name;
 }

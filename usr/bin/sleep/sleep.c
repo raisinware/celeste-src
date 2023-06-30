@@ -9,7 +9,8 @@
 #include <unistd.h>
 
 /// Display usage message and exit with an error
-[[noreturn]] static void usage(void) {
+[[noreturn]]
+static void usage(void) {
 	fprintf(stderr, "usage: %s [seconds]\n", getprogname());
 	exit(EXIT_FAILURE);
 }
